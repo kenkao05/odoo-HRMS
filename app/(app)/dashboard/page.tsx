@@ -5,6 +5,7 @@ import { KpiCard } from "@/components/dashboard/KpiCard";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { SalaryByDeptChart } from "@/components/dashboard/SalaryByDeptChart";
 import { PayslipStatusChart } from "@/components/dashboard/PayslipStatusChart";
+import { NetSalaryTrendChart } from "@/components/dashboard/NetSalaryTrendChart";
 import { AlertsList } from "@/components/dashboard/AlertsList";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { formatCurrency } from "@/lib/utils/dates";
@@ -84,6 +85,10 @@ export default function DashboardPage() {
       <div className="grid-2" style={{ marginBottom: 18 }}>
         <SalaryByDeptChart data={summary.salaryByDept ?? []} />
         <PayslipStatusChart data={summary.payslipStatusBreakdown ?? []} />
+      </div>
+
+      <div style={{ marginBottom: 18 }}>
+        <NetSalaryTrendChart data={summary.netSalaryTrend ?? []} />
       </div>
 
       <div className="grid-2">

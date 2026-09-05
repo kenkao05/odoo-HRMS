@@ -128,6 +128,35 @@ export async function GET(req: Request) {
       record_id: c.id,
     }));
 
+  // Trend needs to span multiple periods, so it's built from all payslips
+  // (still respecting department/employee-type filters) rather than the
+  // period-filtered `filtered` list above. Draft payslips are excluded --
+  // their net is always 0 until computed, which would dilute the trend.
+  const trendSource = (payslips ?? []).filter((p: any) => {
+    if (p.status === "draft") return false;
+    if (
+      parsed.data.department_id &&
+      p.employees?.department_id !== parsed.data.department_id
+    )
+      return false;
+    if (
+      parsed.data.employee_type &&
+      p.employees?.employee_type !== parsed.data.employee_type
+    )
+      return false;
+    return true;
+  });
+  const trendByMonth = new Map<string, number>();
+  for (const p of trendSource as any[]) {
+    const periodStart = p.payruns?.period_start;
+    if (!periodStart) continue;
+    const month = String(periodStart).slice(0, 7); // "YYYY-MM"
+    trendByMonth.set(month, (trendByMonth.get(month) ?? 0) + p.net);
+  }
+  const netSalaryTrend = Array.from(trendByMonth.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([period, net]) => ({ period, net }));
+
   return NextResponse.json({
     kpis: {
       totalNetPaid,
@@ -138,6 +167,7 @@ export async function GET(req: Request) {
     },
     payslipStatusBreakdown,
     salaryByDept,
+    netSalaryTrend,
     alerts,
     attendanceOverview: attCounts,
     timeOffOverview: { approvedDays, pendingCount },
