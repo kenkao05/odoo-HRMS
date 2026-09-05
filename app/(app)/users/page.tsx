@@ -105,13 +105,15 @@ export default function UsersPage() {
     const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
     const body = await res.json();
     if (!res.ok) {
-      push(body.error ?? "Failed to generate reset link");
+      push(body.error ?? "Failed to send reset link");
       return;
     }
-    if (!body.reset_link) {
-      push("Reset link could not be generated");
+    if (body.emailed) {
+      push(`Reset email sent to ${body.email}`, "success");
       return;
     }
+    // Email wasn't configured or failed -- fall back to showing the link
+    // directly so there's still a way to get it to the user.
     setResetLink({ email: body.email, link: body.reset_link });
   }
 

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
+import { Resend } from "resend";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateUserSchema } from "@/lib/validation/user-admin";
+import { siteUrl } from "@/lib/utils/site-url";
 
 export async function PATCH(
   req: Request,
@@ -102,13 +104,56 @@ export async function DELETE(
   const { data: linkData, error } = await admin.auth.admin.generateLink({
     type: "recovery",
     email: targetUser.user.email,
+    options: { redirectTo: `${siteUrl()}/reset-password` },
   });
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
 
+  const resetLink = linkData.properties?.action_link ?? null;
+
+  if (!resetLink) {
+    return NextResponse.json(
+      { error: "Reset link could not be generated" },
+      { status: 500 },
+    );
+  }
+
+  if (!process.env.RESEND_API_KEY) {
+    // Degrade gracefully, same as send-payslips: if email isn't configured
+    // yet, hand the link back so the admin can share it manually rather
+    // than blocking the demo.
+    return NextResponse.json({
+      ok: true,
+      emailed: false,
+      email: targetUser.user.email,
+      reset_link: resetLink,
+      note: "RESEND_API_KEY not set -- link returned instead of emailed",
+    });
+  }
+
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  try {
+    await resend.emails.send({
+      from: "payroll@peoplepay360.app",
+      to: targetUser.user.email,
+      subject: "Reset your PeoplePay360 password",
+      html: `<p>A password reset was requested for your PeoplePay360 account.</p><p><a href="${resetLink}">Click here to set a new password</a>. If you didn't request this, you can ignore this email.</p>`,
+    });
+  } catch {
+    // Email failed to send -- fall back to returning the link so the
+    // admin isn't stuck with no way to help the user.
+    return NextResponse.json({
+      ok: true,
+      emailed: false,
+      email: targetUser.user.email,
+      reset_link: resetLink,
+      note: "Email failed to send -- link returned instead",
+    });
+  }
+
   return NextResponse.json({
     ok: true,
+    emailed: true,
     email: targetUser.user.email,
-    reset_link: linkData.properties?.action_link ?? null,
   });
 }
