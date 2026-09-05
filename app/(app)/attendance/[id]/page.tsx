@@ -36,7 +36,7 @@ export default function AttendanceDetailPage() {
     }
     const { error } = await supabase
       .from("attendance")
-      .update(parsed.data)
+      .update({ ...parsed.data, corrected: true })
       .eq("id", id);
     if (error) {
       push(error.message);

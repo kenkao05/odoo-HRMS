@@ -23,6 +23,19 @@ export function isContractNeedingAttention(
   return days >= 0 && days <= 30;
 }
 
+/** Hours between two "HH:MM" times, minus a break, floored at 0. */
+export function hoursBetween(
+  start: string | null,
+  end: string | null,
+  breakMinutes: number,
+): number {
+  if (!start || !end) return 0;
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  const minutes = eh * 60 + em - (sh * 60 + sm) - (breakMinutes ?? 0);
+  return Math.max(0, minutes / 60);
+}
+
 export function formatCurrency(n: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",

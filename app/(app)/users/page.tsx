@@ -9,17 +9,33 @@ import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 import { createClient } from "@/lib/supabase/client";
 
+const ROLE_OPTIONS = [
+  { value: "employee", label: "Employee" },
+  { value: "hr_manager", label: "HR Manager" },
+  { value: "hr_payroll_user", label: "HR Payroll User" },
+  { value: "hr_payroll_manager", label: "HR Payroll Manager" },
+  { value: "admin", label: "Admin" },
+];
+
 export default function UsersPage() {
   const [users, setUsers] = useState<any[] | null>(null);
   const [employees, setEmployees] = useState<{ id: string; name: string }[]>(
     [],
   );
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    email: string;
+    roles: string[];
+    employee_id: string;
+  }>({
     email: "",
-    role: "employee",
+    roles: ["employee"],
     employee_id: "",
   });
+  const [createdCreds, setCreatedCreds] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
   const { push } = useToast();
   const supabase = createClient();
 
@@ -37,9 +53,22 @@ export default function UsersPage() {
       .then(({ data }) => setEmployees(data ?? []));
   }, []);
 
+  function toggleRole(role: string) {
+    setForm((f) => ({
+      ...f,
+      roles: f.roles.includes(role)
+        ? f.roles.filter((r) => r !== role)
+        : [...f.roles, role],
+    }));
+  }
+
   async function createUser() {
     if (!form.employee_id) {
       push("Please select an employee");
+      return;
+    }
+    if (form.roles.length === 0) {
+      push("Select at least one role");
       return;
     }
     const res = await fetch("/api/users", {
@@ -51,8 +80,9 @@ export default function UsersPage() {
       push(body.error ?? "Failed");
       return;
     }
-    push("User created", "success");
     setOpen(false);
+    setCreatedCreds({ email: form.email, password: body.temp_password });
+    setForm({ email: "", roles: ["employee"], employee_id: "" });
     load();
   }
 
@@ -94,7 +124,7 @@ export default function UsersPage() {
             columns={[
               { header: "Name", render: (u) => u.employees?.name ?? "--" },
               { header: "Email", render: (u) => u.employees?.email ?? "--" },
-              { header: "Role", render: (u) => u.role },
+              { header: "Roles", render: (u) => (u.roles ?? [u.role]).join(", ") },
               {
                 header: "Status",
                 render: (u) => <Badge status={u.active ? "active" : "inactive"} />,
@@ -131,17 +161,19 @@ export default function UsersPage() {
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </FormField>
-        <FormField label="Role">
-          <select
-            value={form.role}
-            onChange={(e) => setForm({ ...form, role: e.target.value })}
-          >
-            <option value="employee">Employee</option>
-            <option value="hr_manager">HR Manager</option>
-            <option value="hr_payroll_user">HR Payroll User</option>
-            <option value="hr_payroll_manager">HR Payroll Manager</option>
-            <option value="admin">Admin</option>
-          </select>
+        <FormField label="Roles *">
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            {ROLE_OPTIONS.map((r) => (
+              <label key={r.value} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <input
+                  type="checkbox"
+                  checked={form.roles.includes(r.value)}
+                  onChange={() => toggleRole(r.value)}
+                />
+                {r.label}
+              </label>
+            ))}
+          </div>
         </FormField>
         <FormField label="Employee *">
           <select
@@ -159,6 +191,24 @@ export default function UsersPage() {
           </select>
         </FormField>
         <Button onClick={createUser}>Create</Button>
+      </Modal>
+
+      <Modal
+        open={!!createdCreds}
+        onClose={() => setCreatedCreds(null)}
+        title="User created"
+      >
+        <p className="sub" style={{ marginBottom: 12 }}>
+          Share these credentials with the new user. This password will not be shown again --
+          use &quot;Reset password&quot; on this page later if it&apos;s lost.
+        </p>
+        <FormField label="Email">
+          <input readOnly value={createdCreds?.email ?? ""} />
+        </FormField>
+        <FormField label="Temporary password">
+          <input readOnly value={createdCreds?.password ?? ""} />
+        </FormField>
+        <Button onClick={() => setCreatedCreds(null)}>Done</Button>
       </Modal>
     </div>
   );
