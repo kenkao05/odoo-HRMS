@@ -1,21 +1,36 @@
 {
+  "name": "peoplepay360",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
     "@react-pdf/renderer": "^4.9.0",
     "@supabase/ssr": "^0.12.6",
     "@supabase/supabase-js": "^2.109.0",
-    "date-fns": "^4.4.0",
-    "lucide-react": "^1.41.0",
-    "mathjs": "^15.2.0",
-    "next": "^14.2.35",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "recharts": "^3.10.1",
-    "resend": "^6.26.0",
-    "zod": "^4.5.4"
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.468.0",
+    "mathjs": "^14.0.0",
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "recharts": "^2.15.0",
+    "resend": "^4.0.0",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@types/react": "^18.3.31",
-    "@types/react-dom": "^18.3.7",
-    "eslint-config-next": "^14.2.35"
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.5.5",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
   }
 }
