@@ -15,13 +15,16 @@ export default function ContractDetailPage() {
   const [structures, setStructures] = useState<{ id: string; name: string }[]>(
     [],
   );
+  const [departments, setDepartments] = useState<{ id: string; name: string }[]>(
+    [],
+  );
   const { push } = useToast();
   const supabase = createClient();
 
   useEffect(() => {
     supabase
       .from("contracts")
-      .select("*")
+      .select("*, employees(name)")
       .eq("id", id)
       .single()
       .then(({ data }) => setContract(data));
@@ -29,6 +32,10 @@ export default function ContractDetailPage() {
       .from("salary_structures")
       .select("id, name")
       .then(({ data }) => setStructures(data ?? []));
+    supabase
+      .from("departments")
+      .select("id, name")
+      .then(({ data }) => setDepartments(data ?? []));
   }, [id]);
 
   async function save() {
@@ -67,6 +74,30 @@ export default function ContractDetailPage() {
         </Link>
       </div>
       <div className="card pad" style={{ maxWidth: 480 }}>
+        <FormField label="Employee">
+          <input value={contract.employees?.name ?? "--"} disabled />
+        </FormField>
+        <FormField label="Department">
+          <select
+            value={contract.department_id ?? ""}
+            onChange={(e) =>
+              setContract({ ...contract, department_id: e.target.value || null })
+            }
+          >
+            <option value="">--</option>
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </FormField>
+        <FormField label="Job Position">
+          <input
+            value={contract.job_position ?? ""}
+            onChange={(e) => setContract({ ...contract, job_position: e.target.value })}
+          />
+        </FormField>
         <FormField label="Start Date">
           <input
             type="date"

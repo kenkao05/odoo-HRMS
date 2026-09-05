@@ -16,7 +16,6 @@ export default function UsersPage() {
   );
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    name: "",
     email: "",
     role: "employee",
     employee_id: "",
@@ -39,6 +38,10 @@ export default function UsersPage() {
   }, []);
 
   async function createUser() {
+    if (!form.employee_id) {
+      push("Please select an employee");
+      return;
+    }
     const res = await fetch("/api/users", {
       method: "POST",
       body: JSON.stringify(form),
@@ -122,12 +125,6 @@ export default function UsersPage() {
       )}
 
       <Modal open={open} onClose={() => setOpen(false)} title="Add User">
-        <FormField label="Name">
-          <input
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-        </FormField>
         <FormField label="Email">
           <input
             value={form.email}
@@ -146,12 +143,14 @@ export default function UsersPage() {
             <option value="admin">Admin</option>
           </select>
         </FormField>
-        <FormField label="Linked Employee">
+        <FormField label="Employee *">
           <select
             value={form.employee_id}
             onChange={(e) => setForm({ ...form, employee_id: e.target.value })}
           >
-            <option value="">None</option>
+            <option value="" disabled>
+              Select employee
+            </option>
             {employees.map((e) => (
               <option key={e.id} value={e.id}>
                 {e.name}

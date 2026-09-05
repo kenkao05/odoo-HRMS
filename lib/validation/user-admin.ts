@@ -9,15 +9,14 @@ const roleEnum = z.enum([
 ]);
 
 export const createUserSchema = z.object({
-  name: z.string().min(2).max(120),
   email: z.string().email(),
-  role: roleEnum,
-  employee_id: z.string().uuid().nullable().optional(),
+  roles: z.array(roleEnum).min(1, "Select at least one role"),
+  employee_id: z.string().uuid({ message: "Please select an employee" }),
 });
 
 export const updateUserSchema = z.object({
   active: z.boolean().optional(),
-  role: roleEnum.optional(),
+  roles: z.array(roleEnum).min(1, "Select at least one role").optional(),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
