@@ -1,0 +1,45 @@
+"use client";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Table } from "@/components/ui/Table";
+import { Badge } from "@/components/ui/Badge";
+import { createClient } from "@/lib/supabase/client";
+
+function TimeOffRequestsPageInner() {
+  const [rows, setRows] = useState<any[]>([]);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const employeeFilter = searchParams.get("employee");
+  const supabase = createClient();
+
+  useEffect(() => {
+    let query = supabase
+      .from("time_off_requests")
+      .select("*, employees(name), time_off_types(name)")
+      .order("created_at", { ascending: false });
+    if (employeeFilter) query = query.eq("employee_id", employeeFilter);
+    query.then(({ data }) => setRows(data ?? []));
+  }, [employeeFilter]);
+
+  return (
+    <Table
+      columns={[
+        { header: "Employee", render: (r) => r.employees?.name },
+        { header: "Type", render: (r) => r.time_off_types?.name },
+        { header: "Dates", render: (r) => `${r.start_date} -> ${r.end_date}` },
+        { header: "Duration", render: (r) => r.duration },
+        { header: "Status", render: (r) => <Badge status={r.status} /> },
+      ]}
+      rows={rows}
+      onRowClick={(r) => router.push(`/time-off/requests/${r.id}`)}
+    />
+  );
+}
+
+export default function TimeOffRequestsPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-[#8a7a63]">Loading...</p>}>
+      <TimeOffRequestsPageInner />
+    </Suspense>
+  );
+}
