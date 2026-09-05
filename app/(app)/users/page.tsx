@@ -36,6 +36,10 @@ export default function UsersPage() {
     email: string;
     password: string;
   } | null>(null);
+  const [resetLink, setResetLink] = useState<{
+    email: string;
+    link: string;
+  } | null>(null);
   const { push } = useToast();
   const supabase = createClient();
 
@@ -99,7 +103,16 @@ export default function UsersPage() {
 
   async function resetPassword(id: string) {
     const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
-    if (res.ok) push("Password reset link generated", "success");
+    const body = await res.json();
+    if (!res.ok) {
+      push(body.error ?? "Failed to generate reset link");
+      return;
+    }
+    if (!body.reset_link) {
+      push("Reset link could not be generated");
+      return;
+    }
+    setResetLink({ email: body.email, link: body.reset_link });
   }
 
   return (
@@ -209,6 +222,22 @@ export default function UsersPage() {
           <input readOnly value={createdCreds?.password ?? ""} />
         </FormField>
         <Button onClick={() => setCreatedCreds(null)}>Done</Button>
+      </Modal>
+
+      <Modal
+        open={!!resetLink}
+        onClose={() => setResetLink(null)}
+        title="Password reset link"
+      >
+        <p className="sub" style={{ marginBottom: 12 }}>
+          Send this link to {resetLink?.email}. It stays valid until they use
+          it or you generate a new one -- this dialog won&apos;t close on its
+          own, so take your time copying it.
+        </p>
+        <FormField label="Reset link">
+          <input readOnly value={resetLink?.link ?? ""} />
+        </FormField>
+        <Button onClick={() => setResetLink(null)}>Done</Button>
       </Modal>
     </div>
   );

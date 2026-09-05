@@ -22,7 +22,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     (message: string, type: "error" | "success" = "error") => {
       const id = Date.now();
       setToasts((t) => [...t, { id, message, type }]);
-      setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4000);
+      setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 7000);
     },
     [],
   );

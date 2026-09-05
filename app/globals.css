@@ -296,11 +296,14 @@ table.ledger tfoot td{ padding: 11px 12px; }
 /* ---- Forms ---- */
 .field{ margin-bottom: 14px; }
 .field label{ display:block; font-size: 12px; color: var(--ink-soft); margin-bottom: 5px; }
-.field input, .field select, .field textarea{
+.field input:not([type="checkbox"]):not([type="radio"]), .field select, .field textarea{
   width: 100%; padding: 9px 11px; border: 1px solid var(--rule-strong); border-radius: var(--radius-s);
   background: var(--paper-raised); font-family: var(--font-body); font-size: 13.5px; color: var(--ink);
 }
-.field input:focus, .field select:focus, .field textarea:focus{ border-color: var(--green); outline: none; }
+.field input:not([type="checkbox"]):not([type="radio"]):focus, .field select:focus, .field textarea:focus{ border-color: var(--green); outline: none; }
+.field input[type="checkbox"], .field input[type="radio"]{
+  width: auto; flex-shrink: 0; accent-color: var(--green);
+}
 .field-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
 /* ---- Drawer / overlay ---- */

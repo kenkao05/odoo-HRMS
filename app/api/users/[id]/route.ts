@@ -99,7 +99,7 @@ export async function DELETE(
       { status: 404 },
     );
 
-  const { error } = await admin.auth.admin.generateLink({
+  const { data: linkData, error } = await admin.auth.admin.generateLink({
     type: "recovery",
     email: targetUser.user.email,
   });
@@ -108,6 +108,7 @@ export async function DELETE(
 
   return NextResponse.json({
     ok: true,
-    message: "Password reset link generated",
+    email: targetUser.user.email,
+    reset_link: linkData.properties?.action_link ?? null,
   });
 }
