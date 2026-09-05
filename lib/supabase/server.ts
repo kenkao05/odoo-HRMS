@@ -1,6 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+type CookieToSet = {
+  name: string;
+  value: string;
+  options?: Parameters<Awaited<ReturnType<typeof cookies>>["set"]>[2];
+};
+
 export async function createClient() {
   const cookieStore = await cookies();
 
@@ -12,13 +18,13 @@ export async function createClient() {
         getAll() {
           return cookieStore.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookieToSet[]) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options),
-            );
+            cookiesToSet.forEach(({ name, value, options }) => {
+              cookieStore.set(name, value, options);
+            });
           } catch {
-            // called from a Server Component with no write access; proxy refreshes session instead
+            // Server Component may not be able to set cookies; proxy refreshes session.
           }
         },
       },
@@ -26,7 +32,6 @@ export async function createClient() {
   );
 }
 
-// Always verify with getUser(), never trust getSession() on the server.
 export async function getVerifiedUser() {
   const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();

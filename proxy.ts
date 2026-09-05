@@ -1,8 +1,10 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } });
+export async function proxy(request: NextRequest) {
+  let response = NextResponse.next({
+    request: { headers: request.headers },
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,21 +14,31 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value),
-          );
+        setAll(
+          cookiesToSet: { name: string; value: string; options?: object }[],
+        ) {
+          cookiesToSet.forEach(({ name, value }: { name: string; value: string }) => {
+            request.cookies.set(name, value);
+          });
           response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options),
+          cookiesToSet.forEach(
+            ({
+              name,
+              value,
+              options,
+            }: {
+              name: string;
+              value: string;
+              options?: object;
+            }) => {
+              response.cookies.set(name, value, options as never);
+            },
           );
         },
       },
     },
   );
 
-  // Never use getSession() here -- it trusts the client-supplied JWT without
-  // re-verifying against Supabase Auth. getUser() round-trips and is correct.
   const {
     data: { user },
   } = await supabase.auth.getUser();
