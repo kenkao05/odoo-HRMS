@@ -64,10 +64,58 @@ export async function POST(
       { status: 400 },
     );
 
+  // Resolve each payslip's contract wage. Most payslips already carry a
+  // contract_id set at payrun-creation time; the fallback below only
+  // matters for rows created without one (e.g. direct inserts, future
+  // wizard changes).
+  const contractIds = existingPayslips
+    .map((p) => p.contract_id)
+    .filter((id): id is string => !!id);
+
+  const wageByContractId = new Map<string, number>();
+  if (contractIds.length) {
+    const { data: contracts } = await admin
+      .from("contracts")
+      .select("id, wage")
+      .in("id", contractIds);
+    for (const c of contracts ?? []) wageByContractId.set(c.id, c.wage);
+  }
+
+  const missingContractEmployeeIds = existingPayslips
+    .filter((p) => !p.contract_id)
+    .map((p) => p.employee_id);
+
+  const wageByEmployeeId = new Map<string, number>();
+  if (missingContractEmployeeIds.length) {
+    const { data: fallbackContracts } = await admin
+      .from("contracts")
+      .select("id, employee_id, wage")
+      .eq("structure_id", payrun.structure_id)
+      .eq("status", "active")
+      .in("employee_id", missingContractEmployeeIds);
+    for (const c of fallbackContracts ?? [])
+      wageByEmployeeId.set(c.employee_id, c.wage);
+  }
+
   const results = [];
   for (const payslip of existingPayslips) {
     try {
-      const { lines, gross, net } = runRuleEngine(rules as any);
+      const wage = payslip.contract_id
+        ? wageByContractId.get(payslip.contract_id)
+        : wageByEmployeeId.get(payslip.employee_id);
+
+      if (wage == null) {
+        return NextResponse.json(
+          {
+            error: `Could not resolve a contract wage for payslip ${payslip.id} (employee ${payslip.employee_id})`,
+          },
+          { status: 400 },
+        );
+      }
+
+      const { lines, gross, net } = runRuleEngine(rules as any, {
+        CONTRACT_WAGE: wage,
+      });
 
       await admin.from("payslip_lines").delete().eq("payslip_id", payslip.id);
       await admin.from("payslip_lines").insert(

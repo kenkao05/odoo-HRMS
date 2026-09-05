@@ -19,10 +19,18 @@ export class RuleEngineError extends Error {}
 /**
  * Computes payslip lines for one employee against one salary structure's rules.
  * Rules MUST be pre-sorted by sequence ascending before calling this.
+ *
+ * `seed` pre-populates the `computed` scope before any rule runs, so a rule
+ * can reference a seeded value (e.g. CONTRACT_WAGE) exactly like it would
+ * reference an earlier rule's code. Seeded keys are not emitted as payslip
+ * lines themselves -- only rules produce lines.
  */
-export function runRuleEngine(rules: SalaryRule[]): RuleEngineResult {
+export function runRuleEngine(
+  rules: SalaryRule[],
+  seed: Record<string, number> = {},
+): RuleEngineResult {
   const sorted = [...rules].sort((a, b) => a.sequence - b.sequence);
-  const computed: Record<string, number> = {};
+  const computed: Record<string, number> = { ...seed };
   const lines: ComputedLine[] = [];
 
   for (const rule of sorted) {
@@ -93,14 +101,16 @@ export function runRuleEngine(rules: SalaryRule[]): RuleEngineResult {
     });
   }
 
-  const gross = lines
-    .filter(
-      (l) =>
-        l.category === "gross" ||
-        l.category === "basic" ||
-        l.category === "allowance",
-    )
-    .reduce((sum, l) => sum + l.amount, 0);
+  // A structure's own "gross" rule (e.g. a formula like BASIC + HRA) is
+  // authoritative when present -- summing it alongside the basic/allowance
+  // lines it's built from would double-count. Only fall back to summing
+  // basic + allowance when no explicit gross-category rule exists.
+  const grossLine = lines.find((l) => l.category === "gross");
+  const gross = grossLine
+    ? grossLine.amount
+    : lines
+        .filter((l) => l.category === "basic" || l.category === "allowance")
+        .reduce((sum, l) => sum + l.amount, 0);
 
   const deductions = lines
     .filter((l) => l.category === "deduction")
