@@ -23,7 +23,7 @@ export async function GET() {
   const { data, error } = await admin
     .from("profiles")
     .select(
-      "id, role, active, can_edit_salary_config, employee_id, employees(name, email)",
+      "id, role, active, employee_id, employees(name, email)",
     );
 
   if (error)
@@ -79,10 +79,6 @@ export async function POST(req: Request) {
     id: created.user.id,
     employee_id: parsed.data.employee_id ?? null,
     role: parsed.data.role,
-    can_edit_salary_config:
-      parsed.data.role === "hr_payroll"
-        ? (parsed.data.can_edit_salary_config ?? false)
-        : false,
     active: true,
   });
 

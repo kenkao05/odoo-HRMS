@@ -15,7 +15,9 @@ export const payrunCreateSchema = z
   });
 
 export const dashboardQuerySchema = z.object({
-  period: z.string().optional(),
+  period: z
+    .enum(["this_month", "last_month", "this_quarter", "this_year"])
+    .optional(),
   department_id: z.string().uuid().optional(),
   employee_type: z.enum(["full_time", "part_time", "contract"]).optional(),
 });

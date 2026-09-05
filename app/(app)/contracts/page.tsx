@@ -6,18 +6,24 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils/dates";
+import { ListFilters } from "@/components/ui/ListFilters";
 
 function ContractsPageInner() {
   const [contracts, setContracts] = useState<any[]>([]);
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
+  const [department, setDepartment] = useState("");
+  const [departments, setDepartments] = useState<any[]>([]);
   const router = useRouter();
   const searchParams = useSearchParams();
   const employeeFilter = searchParams.get("employee");
   const supabase = createClient();
 
   useEffect(() => {
+    supabase.from("departments").select("id,name").then(({ data }) => setDepartments(data ?? []));
     let query = supabase
       .from("contracts")
-      .select("*, employees(name), salary_structures(name)");
+      .select("*, employees(name, employee_type, status, department_id), salary_structures(name)");
     if (employeeFilter) query = query.eq("employee_id", employeeFilter);
     query.then(({ data }) => setContracts(data ?? []));
   }, [employeeFilter]);
@@ -32,6 +38,20 @@ function ContractsPageInner() {
           </p>
         </div>
       </div>
+      <ListFilters
+        departments={departments}
+        type={type}
+        status={status}
+        department={department}
+        onType={setType}
+        onStatus={setStatus}
+        onDepartment={setDepartment}
+        statusOptions={[
+          { value: "active", label: "Active" },
+          { value: "expired", label: "Expired" },
+          { value: "draft", label: "Draft" },
+        ]}
+      />
       <div className="card">
         <Table
           columns={[
@@ -42,7 +62,14 @@ function ContractsPageInner() {
             { header: "Structure", render: (c) => c.salary_structures?.name ?? "--" },
             { header: "Status", render: (c) => <Badge status={c.status} /> },
           ]}
-          rows={contracts}
+          rows={contracts.filter((x: any) => {
+            const e = x.employees;
+            return (
+              (!type || e?.employee_type === type) &&
+              (!status || x.status === status) &&
+              (!department || e?.department_id === department)
+            );
+          })}
           onRowClick={(c) => router.push(`/contracts/${c.id}`)}
           rowStyle={(c) =>
             c.status === "active" ? { background: "var(--green-wash)" } : undefined

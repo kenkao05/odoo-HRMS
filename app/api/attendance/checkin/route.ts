@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { dayOfWeekKey, isLateArrival } from "@/lib/utils/attendance";
 
 export async function POST() {
   const supabase = await createClient();
@@ -35,8 +36,25 @@ export async function POST() {
   }
 
   const now = new Date();
-  const isLate =
-    now.getHours() > 9 || (now.getHours() === 9 && now.getMinutes() > 15);
+
+  const { data: employee } = await supabase
+    .from("employees")
+    .select("schedule_id")
+    .eq("id", profile.employee_id)
+    .single();
+
+  let scheduledStart: string | null = null;
+  if (employee?.schedule_id) {
+    const { data: scheduleDay } = await supabase
+      .from("schedule_days")
+      .select("start_time")
+      .eq("schedule_id", employee.schedule_id)
+      .eq("day", dayOfWeekKey(now))
+      .maybeSingle();
+    scheduledStart = scheduleDay?.start_time ?? null;
+  }
+
+  const isLate = isLateArrival(now, scheduledStart);
 
   const { data, error } = await supabase
     .from("attendance")

@@ -456,3 +456,125 @@ input:checked + .slider::before{ transform: translateX(16px); }
 
 .sidebar-scrim{ display:none; position: fixed; inset:0; background: rgba(0,0,0,.35); z-index: 65; }
 .sidebar-scrim.show{ display:block; }
+
+/* ============================================================
+   PEOPLEPAY360 OPENING LOADER — React Bits / ScrollFloat
+   ============================================================ */
+.pp-loader{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 44%, rgba(43,110,82,.09), transparent 30%),
+    var(--paper);
+  color: var(--ink);
+  opacity: 1;
+  pointer-events: auto;
+}
+.pp-loader-scroller{
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.pp-loader-scroller::-webkit-scrollbar{ display:none; }
+.pp-loader-stage{
+  min-height: 180vh;
+  position: relative;
+}
+.pp-loader-content{
+  position: absolute;
+  top: 47vh;
+  left: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  padding: 24px;
+}
+.pp-loader-kicker{
+  font-size: 10px;
+  letter-spacing: .22em;
+  color: var(--ink-faint);
+  margin-bottom: 22px;
+}
+.pp-loader-wordmark{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.pp-loader-wordmark-text{
+  color: var(--ink);
+  font-family: var(--font-display);
+}
+.pp-loader-wordmark-text::first-letter{ color: var(--green); }
+.pp-loader-rule{
+  width: min(360px, 58vw);
+  height: 1px;
+  background: var(--rule-strong);
+  margin-top: 28px;
+  transform-origin: center;
+  animation: pp-loader-rule 1.2s .55s both ease-out;
+}
+.pp-loader-status{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: .04em;
+  animation: pp-loader-status 1s .8s both ease-out;
+}
+.pp-loader-dot{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 0 0 rgba(43,110,82,.3);
+  animation: pp-loader-pulse 1.25s infinite;
+}
+.pp-loader-corner{
+  position: absolute;
+  right: 24px;
+  bottom: 20px;
+  font-size: 9px;
+  letter-spacing: .14em;
+  color: var(--ink-faint);
+}
+@keyframes pp-loader-rule{
+  from{ transform: scaleX(0); opacity:0; }
+  to{ transform: scaleX(1); opacity:1; }
+}
+@keyframes pp-loader-status{
+  from{ transform: translateY(8px); opacity:0; }
+  to{ transform: translateY(0); opacity:1; }
+}
+@keyframes pp-loader-pulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(43,110,82,.25); opacity:.75; }
+  50%{ box-shadow:0 0 0 6px rgba(43,110,82,0); opacity:1; }
+}
+@media (max-width: 640px){
+  .pp-loader-content{ top: 44vh; }
+  .pp-loader-kicker{ font-size: 9px; margin-bottom: 16px; }
+  .pp-loader-wordmark-text{ font-size: clamp(2.5rem, 13vw, 4.5rem); }
+  .pp-loader-corner{ right: 16px; bottom: 14px; }
+}
+
+/* Employee list / Kanban views */
+.view-toggle{display:flex;gap:4px;padding:4px;border:1px solid var(--rule-strong);border-radius:var(--radius-s);background:var(--paper-raised);margin-bottom:18px}
+.view-toggle button{border:0;background:transparent;padding:7px 11px;border-radius:6px;font-size:12px;cursor:pointer;color:var(--ink-faint)}
+.view-toggle button.active{background:var(--ink);color:white}
+.employee-kanban{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.kanban-column{background:var(--paper-raised);border:1px solid var(--rule);border-radius:var(--radius-m);padding:12px;min-height:260px}
+.kanban-head{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 12px;border-bottom:1px solid var(--rule);font-size:14px}
+.kanban-head span{font-size:12px;background:var(--slate-wash);padding:3px 8px;border-radius:999px}
+.kanban-cards{display:flex;flex-direction:column;gap:9px;padding-top:10px}
+.employee-kanban-card{width:100%;text-align:left;border:1px solid var(--rule);background:var(--paper);border-radius:10px;padding:12px;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.employee-kanban-card:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.07)}
+.kanban-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--ink-faint)}
+.kanban-empty{padding:20px;text-align:center;color:var(--ink-faint);font-size:12px}
+@media(max-width:900px){.employee-kanban{grid-template-columns:1fr}.view-toggle{margin-bottom:0}}

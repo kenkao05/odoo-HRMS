@@ -30,12 +30,12 @@ export default function SalaryRuleDetailPage() {
       if (!user) return;
       const { data: profile } = await supabase
         .from("profiles")
-        .select("role, can_edit_salary_config")
+        .select("role")
         .eq("id", user.id)
         .single();
       setCanEdit(
         profile?.role === "admin" ||
-          (profile?.role === "hr_payroll" && !!profile?.can_edit_salary_config),
+          profile?.role === "hr_payroll_manager",
       );
     })();
   }, [id]);

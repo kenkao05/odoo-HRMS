@@ -19,7 +19,7 @@ export async function POST(
     .select("role")
     .eq("id", user.id)
     .single();
-  if (!profile || !["hr_payroll", "admin"].includes(profile.role)) {
+  if (!profile || !["hr_payroll_user", "hr_payroll_manager", "admin"].includes(profile.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

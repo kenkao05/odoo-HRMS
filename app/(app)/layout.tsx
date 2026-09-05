@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppShell } from "@/components/layout/AppShell";
+import { LoadingGate } from "@/components/layout/LoadingGate";
 
 export default async function AppLayout({
   children,
@@ -26,7 +27,7 @@ export default async function AppLayout({
       role={profile.role as any}
       name={(profile as any).employees?.name ?? user.email ?? "User"}
     >
-      {children}
+      <LoadingGate>{children}</LoadingGate>
     </AppShell>
   );
 }

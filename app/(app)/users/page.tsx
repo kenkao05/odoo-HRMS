@@ -20,7 +20,6 @@ export default function UsersPage() {
     email: "",
     role: "employee",
     employee_id: "",
-    can_edit_salary_config: false,
   });
   const { push } = useToast();
   const supabase = createClient();
@@ -141,7 +140,9 @@ export default function UsersPage() {
             onChange={(e) => setForm({ ...form, role: e.target.value })}
           >
             <option value="employee">Employee</option>
-            <option value="hr_payroll">HR Payroll</option>
+            <option value="hr_manager">HR Manager</option>
+            <option value="hr_payroll_user">HR Payroll User</option>
+            <option value="hr_payroll_manager">HR Payroll Manager</option>
             <option value="admin">Admin</option>
           </select>
         </FormField>
@@ -158,20 +159,6 @@ export default function UsersPage() {
             ))}
           </select>
         </FormField>
-        {form.role === "hr_payroll" && (
-          <FormField label="Can edit salary config">
-            <label className="switch">
-              <input
-                type="checkbox"
-                checked={form.can_edit_salary_config}
-                onChange={(e) =>
-                  setForm({ ...form, can_edit_salary_config: e.target.checked })
-                }
-              />
-              <span className="slider" />
-            </label>
-          </FormField>
-        )}
         <Button onClick={createUser}>Create</Button>
       </Modal>
     </div>

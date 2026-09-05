@@ -6,9 +6,14 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { CheckInOutWidget } from "@/components/attendance/CheckInOutWidget";
 import { createClient } from "@/lib/supabase/client";
+import { ListFilters } from "@/components/ui/ListFilters";
 
 function AttendancePageInner() {
   const [rows, setRows] = useState<any[] | null>(null);
+  const [type, setType] = useState("");
+  const [status, setStatus] = useState("");
+  const [department, setDepartment] = useState("");
+  const [departments, setDepartments] = useState<any[]>([]);
   const [myEmployeeId, setMyEmployeeId] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -16,6 +21,7 @@ function AttendancePageInner() {
   const supabase = createClient();
 
   useEffect(() => {
+    supabase.from("departments").select("id,name").then(({ data }) => setDepartments(data ?? []));
     (async () => {
       const {
         data: { user },
@@ -30,7 +36,7 @@ function AttendancePageInner() {
 
       let query = supabase
         .from("attendance")
-        .select("*, employees(name)")
+        .select("*, employees(name, employee_type, status, department_id)")
         .order("check_in", { ascending: false });
       if (employeeFilter) query = query.eq("employee_id", employeeFilter);
       const { data } = await query;
@@ -57,6 +63,21 @@ function AttendancePageInner() {
         </div>
       )}
 
+      <ListFilters
+        departments={departments}
+        type={type}
+        status={status}
+        department={department}
+        onType={setType}
+        onStatus={setStatus}
+        onDepartment={setDepartment}
+        statusOptions={[
+          { value: "present", label: "Present" },
+          { value: "late", label: "Late" },
+          { value: "missing_checkout", label: "Missing Checkout" },
+          { value: "absent", label: "Absent" },
+        ]}
+      />
       <div className="card">
         <Table
           columns={[
@@ -71,9 +92,32 @@ function AttendancePageInner() {
                 a.check_out ? new Date(a.check_out).toLocaleString() : "--",
             },
             { header: "Worked Hours", render: (a) => a.worked_hours ?? "--", num: true },
-            { header: "Status", render: (a) => <Badge status={a.status} /> },
+            {
+              header: "Status",
+              render: (a) => (
+                <Badge
+                  status={a.status}
+                  label={
+                    a.status === "missing_checkout"
+                      ? "Missing Checkout"
+                      : a.status === "late"
+                        ? "Late"
+                        : a.status === "present"
+                          ? "Present"
+                          : "Absent"
+                  }
+                />
+              ),
+            },
           ]}
-          rows={rows}
+          rows={rows.filter((x: any) => {
+            const e = x.employees;
+            return (
+              (!type || e?.employee_type === type) &&
+              (!status || x.status === status) &&
+              (!department || e?.department_id === department)
+            );
+          })}
           onRowClick={(a) => router.push(`/attendance/${a.id}`)}
         />
       </div>

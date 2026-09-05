@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 
 const ROLE_LABEL: Record<string, string> = {
   employee: "Employee",
-  hr_payroll: "HR & Payroll",
+  hr_manager: "HR Manager",
+  hr_payroll_user: "HR Payroll User",
+  hr_payroll_manager: "HR Payroll Manager",
   admin: "Admin",
 };
 

@@ -11,10 +11,9 @@ import { formatCurrency } from "@/lib/utils/dates";
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<any>(null);
-  const [departments, setDepartments] = useState<
-    { id: string; name: string }[]
-  >([]);
+  const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
   const [filters, setFilters] = useState<{
+    period?: string;
     department_id?: string;
     employee_type?: string;
   }>({});
@@ -29,6 +28,9 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const params = new URLSearchParams();
+    if (filters.period) {
+      params.set("period", filters.period);
+    }
     if (filters.department_id) {
       params.set("department_id", filters.department_id);
     }
@@ -57,13 +59,6 @@ export default function DashboardPage() {
     return <LoadingBlock label="Loading dashboard…" />;
   }
 
-  const statusData = [
-    {
-      status: "paid",
-      count: summary.kpis.payslipsGenerated ? 1 : 0,
-    }, // illustrative -- real breakdown comes from payslips.status group-by
-  ];
-
   return (
     <div>
       <div className="view-head">
@@ -88,7 +83,7 @@ export default function DashboardPage() {
 
       <div className="grid-2" style={{ marginBottom: 18 }}>
         <SalaryByDeptChart data={summary.salaryByDept ?? []} />
-        <PayslipStatusChart data={statusData} />
+        <PayslipStatusChart data={summary.payslipStatusBreakdown ?? []} />
       </div>
 
       <div className="grid-2">

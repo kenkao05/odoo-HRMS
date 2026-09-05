@@ -32,7 +32,11 @@ export default function TimeOffRequestDetailPage() {
           .select("role")
           .eq("id", user.id)
           .single();
-        setCanDecide(["hr_payroll", "admin"].includes(profile?.role ?? ""));
+        setCanDecide(
+          ["hr_manager", "hr_payroll_user", "hr_payroll_manager", "admin"].includes(
+            profile?.role ?? "",
+          ),
+        );
       }
     })();
   }, [id]);

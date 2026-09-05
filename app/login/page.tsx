@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
 import { landingPageFor } from "@/lib/utils/roles";
+import { useToast } from "@/components/ui/Toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const supabase = createClient();
+  const { push } = useToast();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +22,11 @@ export default function LoginPage() {
       { email, password },
     );
     if (signInError || !data.user) {
-      setError(signInError?.message ?? "Sign-in failed");
+      const message = signInError?.message?.toLowerCase().includes("invalid login")
+        ? "Incorrect email or password. Please try again."
+        : (signInError?.message ?? "Sign-in failed");
+      setError(message);
+      push(message, "error");
       return;
     }
     const { data: profile } = await supabase
@@ -29,7 +35,9 @@ export default function LoginPage() {
       .eq("id", data.user.id)
       .single();
     if (!profile?.active) {
-      setError("This account has been deactivated");
+      const message = "This account has been deactivated";
+      setError(message);
+      push(message, "error");
       await supabase.auth.signOut();
       return;
     }

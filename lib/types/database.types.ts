@@ -1,4 +1,4 @@
-export type Role = "employee" | "hr_payroll" | "admin";
+export type Role = "employee" | "hr_manager" | "hr_payroll_user" | "hr_payroll_manager" | "admin";
 export type EmployeeType = "full_time" | "part_time" | "contract";
 export type EmployeeStatus = "active" | "inactive";
 export type ContractStatus = "active" | "expired" | "draft";
@@ -22,7 +22,6 @@ export interface Profile {
   id: string;
   employee_id: string | null;
   role: Role;
-  can_edit_salary_config: boolean;
   active: boolean;
 }
 

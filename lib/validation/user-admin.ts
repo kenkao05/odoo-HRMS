@@ -1,17 +1,23 @@
 import { z } from "zod";
 
+const roleEnum = z.enum([
+  "employee",
+  "hr_manager",
+  "hr_payroll_user",
+  "hr_payroll_manager",
+  "admin",
+]);
+
 export const createUserSchema = z.object({
   name: z.string().min(2).max(120),
   email: z.string().email(),
-  role: z.enum(["employee", "hr_payroll", "admin"]),
+  role: roleEnum,
   employee_id: z.string().uuid().nullable().optional(),
-  can_edit_salary_config: z.boolean().optional().default(false),
 });
 
 export const updateUserSchema = z.object({
   active: z.boolean().optional(),
-  role: z.enum(["employee", "hr_payroll", "admin"]).optional(),
-  can_edit_salary_config: z.boolean().optional(),
+  role: roleEnum.optional(),
 });
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
