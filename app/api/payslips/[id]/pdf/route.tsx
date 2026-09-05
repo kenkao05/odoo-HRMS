@@ -9,15 +9,19 @@ const styles = StyleSheet.create({
   total: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 8, fontSize: 13, fontWeight: 700 },
 });
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const supabase = createClient();
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { data: payslip, error } = await supabase
     .from('payslips')
     .select('*, employees(name, job_position), payslip_lines(*)')
-    .eq('id', params.id)
+    .eq('id', id)
     .single();
 
   if (error || !payslip) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -48,11 +52,11 @@ export async function GET(_req: Request, { params }: { params: { id: string } })
     </Document>
   );
 
-  const buffer = await renderToBuffer(doc);
-  return new NextResponse(buffer, {
+    const buffer = await renderToBuffer(doc);
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `inline; filename="payslip-${params.id}.pdf"`,
+      'Content-Disposition': `inline; filename="payslip-${id}.pdf"`,
     },
   });
 }

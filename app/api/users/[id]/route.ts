@@ -5,9 +5,10 @@ import { updateUserSchema } from "@/lib/validation/user-admin";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -38,22 +39,22 @@ export async function PATCH(
   const { error } = await admin
     .from("profiles")
     .update(parsed.data)
-    .eq("id", params.id);
+    .eq("id", id);
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
 
   if (parsed.data.active === false) {
-    await admin.auth.admin.updateUserById(params.id, {
+    await admin.auth.admin.updateUserById(id, {
       ban_duration: "876000h",
     }); // effectively permanent
   }
   if (parsed.data.active === true) {
-    await admin.auth.admin.updateUserById(params.id, { ban_duration: "none" });
+    await admin.auth.admin.updateUserById(id, { ban_duration: "none" });
   }
 
   await admin.from("audit_log").insert({
     table_name: "profiles",
-    record_id: params.id,
+    record_id: id,
     action: "update_user",
     user_id: user.id,
   });
@@ -63,9 +64,10 @@ export async function PATCH(
 
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -85,12 +87,12 @@ export async function DELETE(
   const { data: targetProfile } = await admin
     .from("profiles")
     .select("id")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (!targetProfile)
     return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const { data: targetUser } = await admin.auth.admin.getUserById(params.id);
+  const { data: targetUser } = await admin.auth.admin.getUserById(id);
   if (!targetUser.user?.email)
     return NextResponse.json(
       { error: "User has no email on file" },

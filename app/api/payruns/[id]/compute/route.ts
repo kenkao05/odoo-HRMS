@@ -5,9 +5,10 @@ import { runRuleEngine, RuleEngineError } from "@/lib/payroll/rule-engine";
 
 export async function POST(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -31,7 +32,7 @@ export async function POST(
   const { data: payrun, error: payrunError } = await admin
     .from("payruns")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (payrunError || !payrun)
     return NextResponse.json({ error: "Payrun not found" }, { status: 404 });
@@ -56,7 +57,7 @@ export async function POST(
   const { data: existingPayslips } = await admin
     .from("payslips")
     .select("*")
-    .eq("payrun_id", params.id);
+    .eq("payrun_id", id);
   if (!existingPayslips?.length)
     return NextResponse.json(
       { error: "Payrun has no employees selected" },
@@ -96,10 +97,10 @@ export async function POST(
   await admin
     .from("payruns")
     .update({ status: "computed" })
-    .eq("id", params.id);
+    .eq("id", id);
   await admin.from("audit_log").insert({
     table_name: "payruns",
-    record_id: params.id,
+    record_id: id,
     action: "compute",
     user_id: user.id,
   });

@@ -1,8 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
-export function createClient() {
-  const cookieStore = cookies();
+export async function createClient() {
+  const cookieStore = await cookies();
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,7 +18,7 @@ export function createClient() {
               cookieStore.set(name, value, options),
             );
           } catch {
-            // called from a Server Component with no write access; middleware refreshes session instead
+            // called from a Server Component with no write access; proxy refreshes session instead
           }
         },
       },
@@ -28,7 +28,7 @@ export function createClient() {
 
 // Always verify with getUser(), never trust getSession() on the server.
 export async function getVerifiedUser() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase.auth.getUser();
   if (error || !data.user) return null;
   return data.user;

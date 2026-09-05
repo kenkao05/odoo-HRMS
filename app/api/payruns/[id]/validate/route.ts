@@ -5,9 +5,10 @@ import { collectValidationWarnings } from "@/lib/payroll/warnings";
 
 export async function POST(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -27,7 +28,7 @@ export async function POST(
   const { data: payrun } = await admin
     .from("payruns")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (!payrun)
     return NextResponse.json({ error: "Payrun not found" }, { status: 404 });
@@ -37,19 +38,19 @@ export async function POST(
       { status: 409 },
     );
 
-  const warnings = await collectValidationWarnings(params.id);
+  const warnings = await collectValidationWarnings(id);
 
   await admin
     .from("payslips")
     .update({ status: "validated" })
-    .eq("payrun_id", params.id);
+    .eq("payrun_id", id);
   await admin
     .from("payruns")
     .update({ status: "validated" })
-    .eq("id", params.id);
+    .eq("id", id);
   await admin.from("audit_log").insert({
     table_name: "payruns",
-    record_id: params.id,
+    record_id: id,
     action: "validate",
     user_id: user.id,
   });

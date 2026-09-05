@@ -4,7 +4,7 @@ import { dashboardQuerySchema } from "@/lib/validation/payrun";
 import { isContractNeedingAttention } from "@/lib/utils/dates";
 
 export async function GET(req: Request) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

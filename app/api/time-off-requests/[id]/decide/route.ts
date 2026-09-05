@@ -4,9 +4,10 @@ import { timeOffDecisionSchema } from "@/lib/validation/time-off";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -37,7 +38,7 @@ export async function POST(
   const { data: request_, error: fetchError } = await supabase
     .from("time_off_requests")
     .select("*, time_off_types(requires_allocation)")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
 
   if (fetchError || !request_)
@@ -55,7 +56,7 @@ export async function POST(
       decided_by: user.id,
       decided_at: new Date().toISOString(),
     })
-    .eq("id", params.id);
+    .eq("id", id);
 
   if (updateError)
     return NextResponse.json({ error: updateError.message }, { status: 500 });

@@ -5,9 +5,10 @@ import { Resend } from "resend";
 
 export async function POST(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -27,7 +28,7 @@ export async function POST(
   const { data: payrun } = await admin
     .from("payruns")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (!payrun)
     return NextResponse.json({ error: "Payrun not found" }, { status: 404 });
@@ -41,7 +42,7 @@ export async function POST(
   const { data: payslips } = await admin
     .from("payslips")
     .select("id, net, employees(name, email)")
-    .eq("payrun_id", params.id);
+    .eq("payrun_id", id);
 
   if (!payslips?.length) return NextResponse.json({ sent: 0, failed: [] });
 

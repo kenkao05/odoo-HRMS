@@ -4,9 +4,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const supabase = createClient();
+  const { id } = await params;
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -26,7 +27,7 @@ export async function POST(
   const { data: payrun } = await admin
     .from("payruns")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
   if (!payrun)
     return NextResponse.json({ error: "Payrun not found" }, { status: 404 });
@@ -39,11 +40,11 @@ export async function POST(
   await admin
     .from("payslips")
     .update({ status: "paid" })
-    .eq("payrun_id", params.id);
-  await admin.from("payruns").update({ status: "paid" }).eq("id", params.id);
+    .eq("payrun_id", id);
+  await admin.from("payruns").update({ status: "paid" }).eq("id", id);
   await admin.from("audit_log").insert({
     table_name: "payruns",
-    record_id: params.id,
+    record_id: id,
     action: "mark_paid",
     user_id: user.id,
   });
