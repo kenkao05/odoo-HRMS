@@ -1,11 +1,33 @@
 "use client";
 import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+const DAY_LABELS: Record<(typeof DAYS)[number], string> = {
+  mon: "Monday",
+  tue: "Tuesday",
+  wed: "Wednesday",
+  thu: "Thursday",
+  fri: "Friday",
+  sat: "Saturday",
+  sun: "Sunday",
+};
+
+const cellInputStyle = {
+  border: "1px solid var(--rule-strong)",
+  borderRadius: "var(--radius-s)",
+  padding: "7px 9px",
+  background: "var(--paper-raised)",
+  fontFamily: "var(--font-body)",
+  fontSize: 13,
+  color: "var(--ink)",
+  width: "100%",
+} as const;
 
 function hoursBetween(
   start: string | null,
@@ -79,68 +101,102 @@ export default function WorkingScheduleDetailPage() {
     push("Saved", "success");
   }
 
-  if (!schedule) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!schedule) return <LoadingBlock label="Loading working schedule…" />;
 
   return (
-    <div className="max-w-2xl rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <table className="w-full text-sm">
-        <thead>
-          <tr>
-            <th className="text-left py-1">Day</th>
-            <th className="text-left py-1">Start</th>
-            <th className="text-left py-1">End</th>
-            <th className="text-left py-1">Break (min)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {DAYS.map((day) => {
-            const d = days.find((x) => x.day === day) ?? {
-              start_time: "",
-              end_time: "",
-              break_minutes: 0,
-            };
-            return (
-              <tr key={day}>
-                <td className="py-1 capitalize">{day}</td>
-                <td>
-                  <input
-                    type="time"
-                    className="rounded border px-2 py-1"
-                    value={d.start_time ?? ""}
-                    onChange={(e) =>
-                      updateDay(day, "start_time", e.target.value)
-                    }
-                  />
-                </td>
-                <td>
-                  <input
-                    type="time"
-                    className="rounded border px-2 py-1"
-                    value={d.end_time ?? ""}
-                    onChange={(e) => updateDay(day, "end_time", e.target.value)}
-                  />
-                </td>
-                <td>
-                  <input
-                    type="number"
-                    className="w-20 rounded border px-2 py-1"
-                    value={d.break_minutes}
-                    onChange={(e) =>
-                      updateDay(day, "break_minutes", Number(e.target.value))
-                    }
-                  />
-                </td>
+    <div>
+      <div className="view-head">
+        <div>
+          <Link href="/working-schedules" className="section-title link">
+            ← Back to Working Schedules
+          </Link>
+          <h2 style={{ marginTop: 6 }}>{schedule.name}</h2>
+          <p className="sub">{schedule.type ?? "--"}</p>
+        </div>
+      </div>
+
+      <div className="card pad" style={{ maxWidth: 640 }}>
+        <div className="section-title">Weekly pattern</div>
+        <div className="table-wrap">
+          <table className="ledger">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Start</th>
+                <th>End</th>
+                <th className="num">Break (min)</th>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      <p className="mt-4 font-medium text-[#3E2723]">
-        Total Weekly Hours: {totalHours.toFixed(1)}
-      </p>
-      <Button className="mt-4" onClick={save}>
-        Save
-      </Button>
+            </thead>
+            <tbody>
+              {DAYS.map((day) => {
+                const d = days.find((x) => x.day === day) ?? {
+                  start_time: "",
+                  end_time: "",
+                  break_minutes: 0,
+                };
+                return (
+                  <tr key={day}>
+                    <td>{DAY_LABELS[day]}</td>
+                    <td>
+                      <input
+                        type="time"
+                        style={cellInputStyle}
+                        value={d.start_time ?? ""}
+                        onChange={(e) =>
+                          updateDay(day, "start_time", e.target.value)
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="time"
+                        style={cellInputStyle}
+                        value={d.end_time ?? ""}
+                        onChange={(e) => updateDay(day, "end_time", e.target.value)}
+                      />
+                    </td>
+                    <td className="num">
+                      <input
+                        type="number"
+                        style={{ ...cellInputStyle, textAlign: "right" }}
+                        value={d.break_minutes}
+                        onChange={(e) =>
+                          updateDay(day, "break_minutes", Number(e.target.value))
+                        }
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div
+          className="card pad"
+          style={{
+            background: "var(--green-wash)",
+            borderColor: "var(--green)",
+            margin: "16px 0",
+          }}
+        >
+          <div style={{ fontSize: 12, color: "var(--ink-faint)" }}>
+            Auto-calculated total
+          </div>
+          <div
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 22,
+              fontWeight: 600,
+              color: "var(--green-deep)",
+            }}
+          >
+            {totalHours.toFixed(1)}h / week
+          </div>
+        </div>
+
+        <Button onClick={save}>Save schedule</Button>
+      </div>
     </div>
   );
 }

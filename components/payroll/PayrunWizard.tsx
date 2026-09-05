@@ -108,11 +108,22 @@ export function PayrunWizard({
 
   return (
     <Modal open={open} onClose={onClose} title="New Pay Run">
+      <div className="wizard-steps">
+        <div className={`wz-step ${step === 1 ? "current" : "done"}`}>
+          <div className="wz-num">{step > 1 ? "✓" : 1}</div>
+          <div className="wz-label">Scope &amp; period</div>
+        </div>
+        <div className="wz-line" />
+        <div className={`wz-step ${step === 2 ? "current" : ""}`}>
+          <div className="wz-num">2</div>
+          <div className="wz-label">Select employees</div>
+        </div>
+      </div>
+
       {step === 1 && (
         <>
           <FormField label="Salary Structure">
             <select
-              className="w-full rounded border px-3 py-2"
               value={structureId}
               onChange={(e) => setStructureId(e.target.value)}
             >
@@ -124,32 +135,38 @@ export function PayrunWizard({
               ))}
             </select>
           </FormField>
-          <FormField label="Period Start">
-            <input
-              type="date"
-              className="w-full rounded border px-3 py-2"
-              value={periodStart}
-              onChange={(e) => setPeriodStart(e.target.value)}
-            />
-          </FormField>
-          <FormField label="Period End">
-            <input
-              type="date"
-              className="w-full rounded border px-3 py-2"
-              value={periodEnd}
-              onChange={(e) => setPeriodEnd(e.target.value)}
-            />
-          </FormField>
+          <div className="field-row">
+            <FormField label="Period Start">
+              <input
+                type="date"
+                value={periodStart}
+                onChange={(e) => setPeriodStart(e.target.value)}
+              />
+            </FormField>
+            <FormField label="Period End">
+              <input
+                type="date"
+                value={periodEnd}
+                onChange={(e) => setPeriodEnd(e.target.value)}
+              />
+            </FormField>
+          </div>
+          <div className="access-note">
+            Only employees with an active contract on the selected structure will be eligible in the next step.
+          </div>
           <Button onClick={goToStep2}>Continue</Button>
         </>
       )}
       {step === 2 && (
         <>
-          <div className="mb-4 max-h-64 overflow-auto">
+          <p style={{ fontSize: 12.5, color: "var(--ink-faint)", marginBottom: 12 }}>
+            {selected.size} of {eligible.length} eligible employees selected.
+          </p>
+          <div className="select-grid" style={{ marginBottom: 16 }}>
             {eligible.map((e) => (
               <label
                 key={e.id}
-                className="flex items-center gap-2 py-1 text-sm"
+                className={`emp-check${selected.has(e.id) ? " checked" : ""}`}
               >
                 <input
                   type="checkbox"
@@ -160,16 +177,26 @@ export function PayrunWizard({
                     setSelected(next);
                   }}
                 />
-                {e.name} -- wage {e.wage} -- since {e.start_date}
+                <div>
+                  <div className="person-name" style={{ fontSize: 13 }}>
+                    {e.name}
+                  </div>
+                  <div className="person-role">
+                    Wage {e.wage} · since {e.start_date}
+                  </div>
+                </div>
               </label>
             ))}
             {eligible.length === 0 && (
-              <p className="text-sm text-[#8a7a63]">
-                No employees with an active contract on this structure.
-              </p>
+              <p className="empty">No employees with an active contract on this structure.</p>
             )}
           </div>
-          <Button onClick={createPayrun}>Create Payrun</Button>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <Button variant="secondary" onClick={() => setStep(1)}>
+              Back
+            </Button>
+            <Button onClick={createPayrun}>Create Payrun</Button>
+          </div>
         </>
       )}
     </Modal>

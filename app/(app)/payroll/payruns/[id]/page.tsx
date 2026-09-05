@@ -1,10 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Table } from "@/components/ui/Table";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { WarningsCallout } from "@/components/payroll/WarningsCallout";
 import { useToast } from "@/components/ui/Toast";
 
@@ -59,25 +61,26 @@ export default function PayrunDetailPage() {
     load();
   }
 
-  if (!payrun) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!payrun) return <LoadingBlock label="Loading payrun…" />;
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="view-head">
         <div>
-          <h1 className="text-xl font-semibold text-[#3E2723]">
-            {payrun.period_start} -&gt; {payrun.period_end}
-          </h1>
-          <p className="text-sm text-[#8a7a63]">
-            {payrun.salary_structures?.name}
-          </p>
+          <Link href="/payroll/payruns" className="section-title link">
+            ← Back to Payruns
+          </Link>
+          <h2 style={{ marginTop: 6 }}>
+            {payrun.period_start} → {payrun.period_end}
+          </h2>
+          <p className="sub">{payrun.salary_structures?.name}</p>
         </div>
         <Badge status={payrun.status} />
       </div>
 
       <WarningsCallout warnings={warnings} />
 
-      <div className="mb-6 flex gap-2">
+      <div className="card pad" style={{ marginBottom: 18, display: "flex", gap: 8, flexWrap: "wrap" }}>
         <Button
           disabled={busy || payrun.status !== "draft"}
           onClick={() => runAction("compute")}
@@ -105,16 +108,18 @@ export default function PayrunDetailPage() {
         </Button>
       </div>
 
-      <Table
-        columns={[
-          { header: "Employee", render: (p) => p.employees?.name },
-          { header: "Gross", render: (p) => p.gross ?? "--" },
-          { header: "Net", render: (p) => p.net ?? "--" },
-          { header: "Status", render: (p) => <Badge status={p.status} /> },
-        ]}
-        rows={payslips}
-        onRowClick={(p) => router.push(`/payroll/payslips/${p.id}`)}
-      />
+      <div className="card">
+        <Table
+          columns={[
+            { header: "Employee", render: (p) => p.employees?.name },
+            { header: "Gross", render: (p) => p.gross ?? "--", num: true },
+            { header: "Net", render: (p) => p.net ?? "--", num: true },
+            { header: "Status", render: (p) => <Badge status={p.status} /> },
+          ]}
+          rows={payslips}
+          onRowClick={(p) => router.push(`/payroll/payslips/${p.id}`)}
+        />
+      </div>
     </div>
   );
 }

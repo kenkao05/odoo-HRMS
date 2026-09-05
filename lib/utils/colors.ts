@@ -1,35 +1,37 @@
-export const COLORS = {
-  cream: "#F5EFE0",
-  card: "#FAF6EC",
-  brown: "#6B4226",
-  darkBrown: "#3E2723",
-  green: "#2E7D32",
-  red: "#C62828",
-  amber: "#F9A825",
-  terracotta: "#C1652F",
-  olive: "#7A8450",
-  gold: "#C9A227",
-} as const;
+export type PillVariant = "green" | "amber" | "brick" | "slate";
 
-export function statusColor(status: string): string {
+/**
+ * Maps a domain status string to a ledger pill variant.
+ * Same status -> color mapping as before, just expressed as the
+ * design system's pill variants instead of raw hex values.
+ */
+export function statusVariant(status: string): PillVariant {
   switch (status) {
     case "active":
     case "approved":
     case "paid":
     case "present":
     case "validated":
-      return COLORS.green;
+      return "green";
     case "inactive":
     case "refused":
     case "absent":
     case "missing_checkout":
-      return COLORS.red;
+      return "brick";
     case "pending":
     case "late":
     case "draft":
     case "computed":
-      return COLORS.amber;
+      return "amber";
     default:
-      return COLORS.brown;
+      return "slate";
   }
 }
+
+// Kept for any legacy callers expecting a hex value (e.g. chart series).
+export const CHART_COLORS = {
+  green: "#2B6E52",
+  amber: "#B9812C",
+  brick: "#A9432C",
+  slate: "#445064",
+} as const;

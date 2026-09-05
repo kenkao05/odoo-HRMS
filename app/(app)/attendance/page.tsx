@@ -3,11 +3,12 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { CheckInOutWidget } from "@/components/attendance/CheckInOutWidget";
 import { createClient } from "@/lib/supabase/client";
 
 function AttendancePageInner() {
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<any[] | null>(null);
   const [myEmployeeId, setMyEmployeeId] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -37,38 +38,52 @@ function AttendancePageInner() {
     })();
   }, [employeeFilter]);
 
+  if (!rows) return <LoadingBlock label="Loading attendance…" />;
+
   return (
     <div>
+      <div className="view-head">
+        <div>
+          <h2>Attendance</h2>
+          <p className="sub">
+            Check-ins, check-outs and worked hours across the team, kept for reporting and payroll insights.
+          </p>
+        </div>
+      </div>
+
       {myEmployeeId && (
-        <div className="mb-4">
+        <div style={{ marginBottom: 18 }}>
           <CheckInOutWidget employeeId={myEmployeeId} />
         </div>
       )}
-      <Table
-        columns={[
-          { header: "Employee", render: (a) => a.employees?.name },
-          {
-            header: "Check In",
-            render: (a) => new Date(a.check_in).toLocaleString(),
-          },
-          {
-            header: "Check Out",
-            render: (a) =>
-              a.check_out ? new Date(a.check_out).toLocaleString() : "--",
-          },
-          { header: "Worked Hours", render: (a) => a.worked_hours ?? "--" },
-          { header: "Status", render: (a) => <Badge status={a.status} /> },
-        ]}
-        rows={rows}
-        onRowClick={(a) => router.push(`/attendance/${a.id}`)}
-      />
+
+      <div className="card">
+        <Table
+          columns={[
+            { header: "Employee", render: (a) => a.employees?.name },
+            {
+              header: "Check In",
+              render: (a) => new Date(a.check_in).toLocaleString(),
+            },
+            {
+              header: "Check Out",
+              render: (a) =>
+                a.check_out ? new Date(a.check_out).toLocaleString() : "--",
+            },
+            { header: "Worked Hours", render: (a) => a.worked_hours ?? "--", num: true },
+            { header: "Status", render: (a) => <Badge status={a.status} /> },
+          ]}
+          rows={rows}
+          onRowClick={(a) => router.push(`/attendance/${a.id}`)}
+        />
+      </div>
     </div>
   );
 }
 
 export default function AttendancePage() {
   return (
-    <Suspense fallback={<p className="text-sm text-[#8a7a63]">Loading...</p>}>
+    <Suspense fallback={<LoadingBlock label="Loading attendance…" />}>
       <AttendancePageInner />
     </Suspense>
   );

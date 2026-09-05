@@ -10,12 +10,14 @@ export function FormField({
   children: ReactNode;
 }) {
   return (
-    <div className="mb-4">
-      <label className="mb-1 block text-sm font-medium text-[#3E2723]">
-        {label}
-      </label>
+    <div className="field">
+      <label>{label}</label>
       {children}
-      {error && <p className="mt-1 text-xs text-[#C62828]">{error}</p>}
+      {error && (
+        <p className="mt-1 text-xs" style={{ color: "var(--brick)" }}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

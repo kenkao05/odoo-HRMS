@@ -14,16 +14,21 @@ export function SalaryByDeptChart({
   data: { department: string; total: number }[];
 }) {
   return (
-    <div className="rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <p className="mb-2 text-sm font-medium text-[#3E2723]">
-        Salary Cost by Department
-      </p>
-      <ResponsiveContainer width="100%" height={240}>
+    <div className="card pad">
+      <div className="section-title">Salary Cost by Department</div>
+      <ResponsiveContainer width="100%" height={220}>
         <BarChart data={data}>
-          <XAxis dataKey="department" tick={{ fontSize: 12 }} />
-          <YAxis tick={{ fontSize: 12 }} />
-          <Tooltip />
-          <Bar dataKey="total" fill="#C1652F" radius={[4, 4, 0, 0]} />
+          <XAxis dataKey="department" tick={{ fontSize: 11, fill: "var(--ink-faint)" }} />
+          <YAxis tick={{ fontSize: 11, fill: "var(--ink-faint)" }} />
+          <Tooltip
+            contentStyle={{
+              background: "var(--paper-raised)",
+              border: "1px solid var(--rule)",
+              borderRadius: 4,
+              fontSize: 12,
+            }}
+          />
+          <Bar dataKey="total" fill="#2B6E52" radius={[3, 3, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

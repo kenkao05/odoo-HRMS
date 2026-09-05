@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { contractSchema } from "@/lib/validation/contract";
 import { useToast } from "@/components/ui/Toast";
 
@@ -55,65 +57,63 @@ export default function ContractDetailPage() {
     push("Saved", "success");
   }
 
-  if (!contract) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!contract) return <LoadingBlock label="Loading contract…" />;
 
   return (
-    <div className="max-w-md rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <FormField label="Start Date">
-        <input
-          type="date"
-          className="w-full rounded border px-3 py-2"
-          value={contract.start_date}
-          onChange={(e) =>
-            setContract({ ...contract, start_date: e.target.value })
-          }
-        />
-      </FormField>
-      <FormField label="End Date">
-        <input
-          type="date"
-          className="w-full rounded border px-3 py-2"
-          value={contract.end_date ?? ""}
-          onChange={(e) =>
-            setContract({ ...contract, end_date: e.target.value || null })
-          }
-        />
-      </FormField>
-      <FormField label="Wage">
-        <input
-          type="number"
-          className="w-full rounded border px-3 py-2"
-          value={contract.wage}
-          onChange={(e) => setContract({ ...contract, wage: e.target.value })}
-        />
-      </FormField>
-      <FormField label="Salary Structure">
-        <select
-          className="w-full rounded border px-3 py-2"
-          value={contract.structure_id ?? ""}
-          onChange={(e) =>
-            setContract({ ...contract, structure_id: e.target.value })
-          }
-        >
-          {structures.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-      </FormField>
-      <FormField label="Status">
-        <select
-          className="w-full rounded border px-3 py-2"
-          value={contract.status}
-          onChange={(e) => setContract({ ...contract, status: e.target.value })}
-        >
-          <option value="draft">Draft</option>
-          <option value="active">Active</option>
-          <option value="expired">Expired</option>
-        </select>
-      </FormField>
-      <Button onClick={save}>Save</Button>
+    <div>
+      <div className="view-head">
+        <Link href="/contracts" className="section-title link">
+          ← Back to Contracts
+        </Link>
+      </div>
+      <div className="card pad" style={{ maxWidth: 480 }}>
+        <FormField label="Start Date">
+          <input
+            type="date"
+            value={contract.start_date}
+            onChange={(e) => setContract({ ...contract, start_date: e.target.value })}
+          />
+        </FormField>
+        <FormField label="End Date">
+          <input
+            type="date"
+            value={contract.end_date ?? ""}
+            onChange={(e) =>
+              setContract({ ...contract, end_date: e.target.value || null })
+            }
+          />
+        </FormField>
+        <FormField label="Wage">
+          <input
+            type="number"
+            value={contract.wage}
+            onChange={(e) => setContract({ ...contract, wage: e.target.value })}
+          />
+        </FormField>
+        <FormField label="Salary Structure">
+          <select
+            value={contract.structure_id ?? ""}
+            onChange={(e) => setContract({ ...contract, structure_id: e.target.value })}
+          >
+            {structures.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </FormField>
+        <FormField label="Status">
+          <select
+            value={contract.status}
+            onChange={(e) => setContract({ ...contract, status: e.target.value })}
+          >
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="expired">Expired</option>
+          </select>
+        </FormField>
+        <Button onClick={save}>Save</Button>
+      </div>
     </div>
   );
 }

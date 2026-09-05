@@ -1,9 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { Table } from "@/components/ui/Table";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 import { salaryStructureSchema } from "@/lib/validation/salary";
 
@@ -91,15 +94,20 @@ export default function SalaryStructureDetailPage() {
     router.push(`/payroll/rules/${newRule.id}`);
   }
 
-  if (!structure) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!structure) return <LoadingBlock label="Loading salary structure…" />;
 
   return (
     <div>
-      <div className="mb-4 max-w-md rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
+      <div className="view-head">
+        <Link href="/payroll/structures" className="section-title link">
+          ← Back to Salary Structures
+        </Link>
+      </div>
+
+      <div className="card pad" style={{ maxWidth: 480, marginBottom: 22 }}>
         <FormField label="Name">
           <input
             disabled={!canEdit}
-            className="w-full rounded border px-3 py-2"
             value={structure.name}
             onChange={(e) =>
               setStructure({ ...structure, name: e.target.value })
@@ -107,60 +115,40 @@ export default function SalaryStructureDetailPage() {
           />
         </FormField>
         <FormField label="Active">
-          <input
-            type="checkbox"
-            disabled={!canEdit}
-            checked={structure.active}
-            onChange={(e) =>
-              setStructure({ ...structure, active: e.target.checked })
-            }
-          />
+          <label className="switch">
+            <input
+              type="checkbox"
+              disabled={!canEdit}
+              checked={structure.active}
+              onChange={(e) =>
+                setStructure({ ...structure, active: e.target.checked })
+              }
+            />
+            <span className="slider" />
+          </label>
         </FormField>
         {canEdit && <Button onClick={save}>Save</Button>}
       </div>
 
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-[#3E2723]">
-          Salary Rules (by sequence)
-        </h2>
+      <div className="section-title">
+        Salary Rules (by sequence)
         {canEdit && (
-          <Button variant="secondary" onClick={addRule}>
-            Add Rule
-          </Button>
+          <button className="link" onClick={addRule}>
+            + Add Rule
+          </button>
         )}
       </div>
-      <div className="overflow-hidden rounded-lg border border-[#e8e0cf]">
-        <table className="w-full text-sm">
-          <thead className="bg-[#3E2723] text-[#F5EFE0]">
-            <tr>
-              <th className="px-4 py-2 text-left">Seq</th>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Code</th>
-              <th className="px-4 py-2 text-left">Category</th>
-            </tr>
-          </thead>
-          <tbody className="bg-[#FAF6EC]">
-            {rules.map((r) => (
-              <tr
-                key={r.id}
-                className="cursor-pointer border-t border-[#e8e0cf] hover:bg-[#efe6d1]"
-                onClick={() => router.push(`/payroll/rules/${r.id}`)}
-              >
-                <td className="px-4 py-2">{r.sequence}</td>
-                <td className="px-4 py-2">{r.name}</td>
-                <td className="px-4 py-2">{r.code}</td>
-                <td className="px-4 py-2 capitalize">{r.category}</td>
-              </tr>
-            ))}
-            {rules.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-[#8a7a63]">
-                  No rules yet
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="card">
+        <Table
+          columns={[
+            { header: "Seq", render: (r) => r.sequence, num: true },
+            { header: "Name", render: (r) => r.name },
+            { header: "Code", render: (r) => r.code },
+            { header: "Category", render: (r) => r.category },
+          ]}
+          rows={rules}
+          onRowClick={(r) => router.push(`/payroll/rules/${r.id}`)}
+        />
       </div>
     </div>
   );

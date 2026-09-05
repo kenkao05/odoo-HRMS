@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { PayslipLinesTable } from "@/components/payroll/PayslipLinesTable";
 
 export default function PayslipDetailPage() {
@@ -22,24 +24,41 @@ export default function PayslipDetailPage() {
       .then(({ data }) => setPayslip(data));
   }, [id]);
 
-  if (!payslip) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!payslip) return <LoadingBlock label="Loading payslip…" />;
 
   return (
     <div>
-      <div className="mb-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-[#3E2723]">
-            {payslip.employees?.name}
-          </h1>
-          <p className="text-sm text-[#8a7a63]">
-            {payslip.payruns?.salary_structures?.name} --{" "}
-            {payslip.payruns?.period_start} -&gt; {payslip.payruns?.period_end}
-            {" -- "}
-            Worked Days: {payslip.worked_days ?? "--"}
-          </p>
-        </div>
-        <Badge status={payslip.status} />
+      <div className="view-head">
+        <Link href="/payroll/payslips" className="section-title link">
+          ← Back to Payslips
+        </Link>
       </div>
+
+      <div className="payslip-doc" style={{ maxWidth: 560, marginBottom: 18 }}>
+        <div className="payslip-head">
+          <div>
+            <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 16 }}>
+              {payslip.employees?.name}
+            </div>
+            <div className="person-role">{payslip.employees?.job_position ?? "--"}</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 12, color: "var(--ink-faint)" }}>
+              {payslip.payruns?.period_start} → {payslip.payruns?.period_end}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--ink-faint)" }}>
+              {payslip.payruns?.salary_structures?.name}
+            </div>
+            <div style={{ marginTop: 6 }}>
+              <Badge status={payslip.status} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p className="sub" style={{ marginBottom: 12 }}>
+        Worked Days: {payslip.worked_days ?? "--"}
+      </p>
 
       <PayslipLinesTable
         lines={payslip.payslip_lines ?? []}
@@ -47,7 +66,7 @@ export default function PayslipDetailPage() {
         net={payslip.net ?? 0}
       />
 
-      <div className="mt-4">
+      <div style={{ marginTop: 16 }}>
         <Button
           variant="secondary"
           onClick={() => window.open(`/api/payslips/${id}/pdf`, "_blank")}

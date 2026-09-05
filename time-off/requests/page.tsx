@@ -1,0 +1,60 @@
+"use client";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Table } from "@/components/ui/Table";
+import { Badge } from "@/components/ui/Badge";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
+import { createClient } from "@/lib/supabase/client";
+
+function TimeOffRequestsPageInner() {
+  const [rows, setRows] = useState<any[] | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const employeeFilter = searchParams.get("employee");
+  const supabase = createClient();
+
+  useEffect(() => {
+    let query = supabase
+      .from("time_off_requests")
+      .select("*, employees(name), time_off_types(name)")
+      .order("created_at", { ascending: false });
+    if (employeeFilter) query = query.eq("employee_id", employeeFilter);
+    query.then(({ data }) => setRows(data ?? []));
+  }, [employeeFilter]);
+
+  if (!rows) return <LoadingBlock label="Loading requests…" />;
+
+  return (
+    <div>
+      <div className="view-head">
+        <div>
+          <h2>Time off requests</h2>
+          <p className="sub">
+            Approving a request deducts it from the employee's allocation automatically.
+          </p>
+        </div>
+      </div>
+      <div className="card">
+        <Table
+          columns={[
+            { header: "Employee", render: (r) => r.employees?.name },
+            { header: "Type", render: (r) => r.time_off_types?.name },
+            { header: "Dates", render: (r) => `${r.start_date} → ${r.end_date}` },
+            { header: "Duration", render: (r) => r.duration, num: true },
+            { header: "Status", render: (r) => <Badge status={r.status} /> },
+          ]}
+          rows={rows}
+          onRowClick={(r) => router.push(`/time-off/requests/${r.id}`)}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default function TimeOffRequestsPage() {
+  return (
+    <Suspense fallback={<LoadingBlock label="Loading requests…" />}>
+      <TimeOffRequestsPageInner />
+    </Suspense>
+  );
+}

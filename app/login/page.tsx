@@ -37,19 +37,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F5EFE0]">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm rounded-lg bg-[#FAF6EC] p-8 shadow"
-      >
-        <h1 className="mb-6 text-center text-xl font-bold text-[#3E2723]">
-          PeoplePay360
-        </h1>
+    <div
+      className="flex min-h-screen items-center justify-center"
+      style={{ background: "var(--paper)" }}
+    >
+      <form onSubmit={handleSubmit} className="card pad w-full max-w-sm">
+        <div className="mb-6 text-center">
+          <div className="brand-mark" style={{ color: "var(--ink)" }}>
+            People<em style={{ color: "var(--green)" }}>Pay</em>360
+          </div>
+          <div className="brand-sub" style={{ color: "var(--ink-faint)" }}>
+            HR &amp; Payroll Ledger
+          </div>
+        </div>
         <FormField label="Email">
           <input
             type="email"
             required
-            className="w-full rounded border px-3 py-2"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -58,16 +62,22 @@ export default function LoginPage() {
           <input
             type="password"
             required
-            className="w-full rounded border px-3 py-2"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
         </FormField>
-        {error && <p className="mb-4 text-sm text-[#C62828]">{error}</p>}
-        <Button type="submit" className="w-full">
+        {error && (
+          <p className="mb-4 text-sm" style={{ color: "var(--brick)" }}>
+            {error}
+          </p>
+        )}
+        <Button type="submit" className="w-full justify-center">
           Sign In
         </Button>
-        <p className="mt-4 text-center text-xs text-[#8a7a63]">
+        <p
+          className="mt-4 text-center text-xs"
+          style={{ color: "var(--ink-faint)" }}
+        >
           Forgot password? Contact your admin.
         </p>
       </form>

@@ -1,9 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
 import { FormField } from "@/components/ui/FormField";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { allocationSchema } from "@/lib/validation/time-off";
 import { useToast } from "@/components/ui/Toast";
 
@@ -63,43 +66,50 @@ export default function AllocationDetailPage() {
     push("Saved", "success");
   }
 
-  if (!alloc) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!alloc) return <LoadingBlock label="Loading allocation…" />;
 
   return (
-    <div className="max-w-md rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <FormField label="Allocated">
-        <input
-          type="number"
-          className="w-full rounded border px-3 py-2"
-          value={alloc.allocated}
-          onChange={(e) => setAlloc({ ...alloc, allocated: e.target.value })}
-        />
-      </FormField>
-      <FormField label="Valid From">
-        <input
-          type="date"
-          className="w-full rounded border px-3 py-2"
-          value={alloc.valid_from}
-          onChange={(e) => setAlloc({ ...alloc, valid_from: e.target.value })}
-        />
-      </FormField>
-      <FormField label="Valid To">
-        <input
-          type="date"
-          className="w-full rounded border px-3 py-2"
-          value={alloc.valid_to ?? ""}
-          onChange={(e) =>
-            setAlloc({ ...alloc, valid_to: e.target.value || null })
-          }
-        />
-      </FormField>
-      <div className="flex gap-2">
-        <Button onClick={save}>Save</Button>
-        {alloc.status === "pending" && (
-          <Button variant="secondary" onClick={approve}>
-            Approve
-          </Button>
-        )}
+    <div>
+      <div className="view-head">
+        <Link href="/time-off/allocations" className="section-title link">
+          ← Back to Allocations
+        </Link>
+      </div>
+      <div className="card pad" style={{ maxWidth: 420 }}>
+        <div style={{ marginBottom: 14 }}>
+          <Badge status={alloc.status} />
+        </div>
+        <FormField label="Allocated">
+          <input
+            type="number"
+            value={alloc.allocated}
+            onChange={(e) => setAlloc({ ...alloc, allocated: e.target.value })}
+          />
+        </FormField>
+        <FormField label="Valid From">
+          <input
+            type="date"
+            value={alloc.valid_from}
+            onChange={(e) => setAlloc({ ...alloc, valid_from: e.target.value })}
+          />
+        </FormField>
+        <FormField label="Valid To">
+          <input
+            type="date"
+            value={alloc.valid_to ?? ""}
+            onChange={(e) =>
+              setAlloc({ ...alloc, valid_to: e.target.value || null })
+            }
+          />
+        </FormField>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Button onClick={save}>Save</Button>
+          {alloc.status === "pending" && (
+            <Button variant="secondary" onClick={approve}>
+              Approve
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

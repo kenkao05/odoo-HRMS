@@ -1,0 +1,166 @@
+"use client";
+import { useEffect, useState, useMemo } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/Button";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
+import { useToast } from "@/components/ui/Toast";
+
+const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+
+function hoursBetween(
+  start: string | null,
+  end: string | null,
+  breakMin: number,
+) {
+  if (!start || !end) return 0;
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  return Math.max(0, (eh * 60 + em - (sh * 60 + sm) - breakMin) / 60);
+}
+
+export default function WorkingScheduleDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const [schedule, setSchedule] = useState<any>(null);
+  const [days, setDays] = useState<any[]>([]);
+  const { push } = useToast();
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase
+      .from("working_schedules")
+      .select("*")
+      .eq("id", id)
+      .single()
+      .then(({ data }) => setSchedule(data));
+    supabase
+      .from("schedule_days")
+      .select("*")
+      .eq("schedule_id", id)
+      .then(({ data }) => setDays(data ?? []));
+  }, [id]);
+
+  const totalHours = useMemo(
+    () =>
+      days.reduce(
+        (sum, d) =>
+          sum + hoursBetween(d.start_time, d.end_time, d.break_minutes),
+        0,
+      ),
+    [days],
+  );
+
+  function updateDay(day: string, field: string, value: any) {
+    setDays((prev) => {
+      const exists = prev.find((d) => d.day === day);
+      if (exists)
+        return prev.map((d) => (d.day === day ? { ...d, [field]: value } : d));
+      return [
+        ...prev,
+        {
+          day,
+          start_time: null,
+          end_time: null,
+          break_minutes: 0,
+          [field]: value,
+        },
+      ];
+    });
+  }
+
+  async function save() {
+    await supabase.from("schedule_days").delete().eq("schedule_id", id);
+    await supabase
+      .from("schedule_days")
+      .insert(days.map((d) => ({ ...d, schedule_id: id })));
+    await supabase
+      .from("working_schedules")
+      .update({ weekly_hours: totalHours })
+      .eq("id", id);
+    push("Saved", "success");
+  }
+
+  if (!schedule) return <LoadingBlock label="Loading schedule…" />;
+
+  return (
+    <div>
+      <div className="view-head">
+        <Link href="/working-schedules" className="section-title link">
+          ← Back to Working Schedules
+        </Link>
+      </div>
+      <div className="card pad" style={{ maxWidth: 640 }}>
+        <div className="table-wrap">
+          <table className="ledger">
+            <thead>
+              <tr>
+                <th>Day</th>
+                <th>Start</th>
+                <th>End</th>
+                <th className="num">Break (min)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {DAYS.map((day) => {
+                const d = days.find((x) => x.day === day) ?? {
+                  start_time: "",
+                  end_time: "",
+                  break_minutes: 0,
+                };
+                return (
+                  <tr key={day}>
+                    <td style={{ textTransform: "capitalize" }}>{day}</td>
+                    <td>
+                      <input
+                        type="time"
+                        value={d.start_time ?? ""}
+                        onChange={(e) =>
+                          updateDay(day, "start_time", e.target.value)
+                        }
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="time"
+                        value={d.end_time ?? ""}
+                        onChange={(e) => updateDay(day, "end_time", e.target.value)}
+                      />
+                    </td>
+                    <td className="num">
+                      <input
+                        type="number"
+                        style={{ width: 80, textAlign: "right" }}
+                        value={d.break_minutes}
+                        onChange={(e) =>
+                          updateDay(day, "break_minutes", Number(e.target.value))
+                        }
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div
+          className="card pad"
+          style={{ background: "var(--green-wash)", borderColor: "var(--green)", margin: "18px 0" }}
+        >
+          <div style={{ fontSize: 12, color: "var(--ink-faint)" }}>Auto-calculated total</div>
+          <div
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: 22,
+              fontWeight: 600,
+              color: "var(--green-deep)",
+            }}
+          >
+            {totalHours.toFixed(1)}h / week
+          </div>
+        </div>
+        <Button onClick={save}>Save</Button>
+      </div>
+    </div>
+  );
+}

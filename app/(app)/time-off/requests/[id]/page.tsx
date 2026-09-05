@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 
 export default function TimeOffRequestDetailPage() {
@@ -49,35 +51,47 @@ export default function TimeOffRequestDetailPage() {
     setRequest({ ...request, status: decision });
   }
 
-  if (!request) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!request) return <LoadingBlock label="Loading request…" />;
 
   return (
-    <div className="max-w-md rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <p className="mb-1 text-sm text-[#3E2723]">
-        <span className="font-medium">Employee:</span> {request.employees?.name}
-      </p>
-      <p className="mb-1 text-sm text-[#3E2723]">
-        <span className="font-medium">Type:</span>{" "}
-        {request.time_off_types?.name}
-      </p>
-      <p className="mb-1 text-sm text-[#3E2723]">
-        <span className="font-medium">Dates:</span> {request.start_date} -&gt;{" "}
-        {request.end_date}
-      </p>
-      <p className="mb-1 text-sm text-[#3E2723]">
-        <span className="font-medium">Reason:</span> {request.reason ?? "--"}
-      </p>
-      <div className="my-3">
-        <Badge status={request.status} />
+    <div>
+      <div className="view-head">
+        <Link href="/time-off/requests" className="section-title link">
+          ← Back to Time Off Requests
+        </Link>
       </div>
-      {canDecide && request.status === "pending" && (
-        <div className="flex gap-2">
-          <Button onClick={() => decide("approved")}>Approve</Button>
-          <Button variant="danger" onClick={() => decide("refused")}>
-            Refuse
-          </Button>
+      <div className="card pad" style={{ maxWidth: 420 }}>
+        <div style={{ marginBottom: 14 }}>
+          <Badge status={request.status} />
         </div>
-      )}
+        <dl className="dl">
+          <dt>Employee</dt>
+          <dd>{request.employees?.name}</dd>
+        </dl>
+        <dl className="dl">
+          <dt>Type</dt>
+          <dd>{request.time_off_types?.name}</dd>
+        </dl>
+        <dl className="dl">
+          <dt>Dates</dt>
+          <dd>
+            {request.start_date} → {request.end_date}
+          </dd>
+        </dl>
+        <dl className="dl">
+          <dt>Reason</dt>
+          <dd>{request.reason ?? "--"}</dd>
+        </dl>
+
+        {canDecide && request.status === "pending" && (
+          <div style={{ display: "flex", gap: 8, marginTop: 18 }}>
+            <Button onClick={() => decide("approved")}>Approve</Button>
+            <Button variant="danger" onClick={() => decide("refused")}>
+              Refuse
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

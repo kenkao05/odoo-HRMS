@@ -14,19 +14,24 @@ export function NetSalaryTrendChart({
   data: { period: string; net: number }[];
 }) {
   return (
-    <div className="rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <p className="mb-2 text-sm font-medium text-[#3E2723]">
-        Monthly Net Salary Trend
-      </p>
-      <ResponsiveContainer width="100%" height={240}>
+    <div className="card pad">
+      <div className="section-title">Monthly Net Salary Trend</div>
+      <ResponsiveContainer width="100%" height={220}>
         <LineChart data={data}>
-          <XAxis dataKey="period" tick={{ fontSize: 12 }} />
-          <YAxis tick={{ fontSize: 12 }} />
-          <Tooltip />
+          <XAxis dataKey="period" tick={{ fontSize: 11, fill: "var(--ink-faint)" }} />
+          <YAxis tick={{ fontSize: 11, fill: "var(--ink-faint)" }} />
+          <Tooltip
+            contentStyle={{
+              background: "var(--paper-raised)",
+              border: "1px solid var(--rule)",
+              borderRadius: 4,
+              fontSize: 12,
+            }}
+          />
           <Line
             type="monotone"
             dataKey="net"
-            stroke="#7A8450"
+            stroke="#B9812C"
             strokeWidth={2}
             dot={false}
           />

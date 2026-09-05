@@ -2,10 +2,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Table } from "@/components/ui/Table";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SalaryRulesPage() {
-  const [rules, setRules] = useState<any[]>([]);
+  const [rules, setRules] = useState<any[] | null>(null);
   const router = useRouter();
   const supabase = createClient();
 
@@ -17,20 +18,34 @@ export default function SalaryRulesPage() {
       .then(({ data }) => setRules(data ?? []));
   }, []);
 
+  if (!rules) return <LoadingBlock label="Loading salary rules…" />;
+
   return (
-    <Table
-      columns={[
-        { header: "Name", render: (r) => r.name },
-        { header: "Code", render: (r) => r.code },
-        { header: "Category", render: (r) => r.category },
-        { header: "Sequence", render: (r) => r.sequence },
-        {
-          header: "Structure",
-          render: (r) => r.salary_structures?.name ?? "--",
-        },
-      ]}
-      rows={rules}
-      onRowClick={(r) => router.push(`/payroll/rules/${r.id}`)}
-    />
+    <div>
+      <div className="view-head">
+        <div>
+          <h2>Salary Rules</h2>
+          <p className="sub">
+            How earnings and deductions are calculated — processed in sequence so totals can build on earlier rules.
+          </p>
+        </div>
+      </div>
+      <div className="card">
+        <Table
+          columns={[
+            { header: "Name", render: (r) => r.name },
+            { header: "Code", render: (r) => r.code },
+            { header: "Category", render: (r) => r.category },
+            { header: "Sequence", render: (r) => r.sequence, num: true },
+            {
+              header: "Structure",
+              render: (r) => r.salary_structures?.name ?? "--",
+            },
+          ]}
+          rows={rules}
+          onRowClick={(r) => router.push(`/payroll/rules/${r.id}`)}
+        />
+      </div>
+    </div>
   );
 }

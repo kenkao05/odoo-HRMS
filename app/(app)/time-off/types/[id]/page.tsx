@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { timeOffTypeSchema } from "@/lib/validation/time-off";
 import { useToast } from "@/components/ui/Toast";
 
@@ -39,46 +41,57 @@ export default function TimeOffTypeDetailPage() {
     push("Saved", "success");
   }
 
-  if (!type) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!type) return <LoadingBlock label="Loading time off type…" />;
 
   return (
-    <div className="max-w-md rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <FormField label="Name">
-        <input
-          className="w-full rounded border px-3 py-2"
-          value={type.name}
-          onChange={(e) => setType({ ...type, name: e.target.value })}
-        />
-      </FormField>
-      <FormField label="Unit">
-        <select
-          className="w-full rounded border px-3 py-2"
-          value={type.unit}
-          onChange={(e) => setType({ ...type, unit: e.target.value })}
-        >
-          <option value="days">Days</option>
-          <option value="hours">Hours</option>
-        </select>
-      </FormField>
-      <FormField label="Requires Allocation">
-        <input
-          type="checkbox"
-          checked={type.requires_allocation}
-          onChange={(e) =>
-            setType({ ...type, requires_allocation: e.target.checked })
-          }
-        />
-      </FormField>
-      <FormField label="Requires Approval">
-        <input
-          type="checkbox"
-          checked={type.requires_approval}
-          onChange={(e) =>
-            setType({ ...type, requires_approval: e.target.checked })
-          }
-        />
-      </FormField>
-      <Button onClick={save}>Save</Button>
+    <div>
+      <div className="view-head">
+        <Link href="/time-off/types" className="section-title link">
+          ← Back to Time Off Types
+        </Link>
+      </div>
+      <div className="card pad" style={{ maxWidth: 420 }}>
+        <FormField label="Name">
+          <input
+            value={type.name}
+            onChange={(e) => setType({ ...type, name: e.target.value })}
+          />
+        </FormField>
+        <FormField label="Unit">
+          <select
+            value={type.unit}
+            onChange={(e) => setType({ ...type, unit: e.target.value })}
+          >
+            <option value="days">Days</option>
+            <option value="hours">Hours</option>
+          </select>
+        </FormField>
+        <FormField label="Requires Allocation">
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={type.requires_allocation}
+              onChange={(e) =>
+                setType({ ...type, requires_allocation: e.target.checked })
+              }
+            />
+            <span className="slider" />
+          </label>
+        </FormField>
+        <FormField label="Requires Approval">
+          <label className="switch">
+            <input
+              type="checkbox"
+              checked={type.requires_approval}
+              onChange={(e) =>
+                setType({ ...type, requires_approval: e.target.checked })
+              }
+            />
+            <span className="slider" />
+          </label>
+        </FormField>
+        <Button onClick={save}>Save</Button>
+      </div>
     </div>
   );
 }

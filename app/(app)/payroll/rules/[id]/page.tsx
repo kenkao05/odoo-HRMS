@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { FormField } from "@/components/ui/FormField";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 import { salaryRuleSchema } from "@/lib/validation/salary";
 
@@ -72,112 +74,112 @@ export default function SalaryRuleDetailPage() {
     push("Saved", "success");
   }
 
-  if (!rule) return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+  if (!rule) return <LoadingBlock label="Loading salary rule…" />;
 
   return (
-    <div className="max-w-md rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <FormField label="Name">
-        <input
-          disabled={!canEdit}
-          className="w-full rounded border px-3 py-2"
-          value={rule.name}
-          onChange={(e) => setRule({ ...rule, name: e.target.value })}
-        />
-      </FormField>
-      <FormField label="Code">
-        <input
-          disabled={!canEdit}
-          className="w-full rounded border px-3 py-2"
-          value={rule.code}
-          onChange={(e) => setRule({ ...rule, code: e.target.value })}
-        />
-      </FormField>
-      <FormField label="Category">
-        <select
-          disabled={!canEdit}
-          className="w-full rounded border px-3 py-2"
-          value={rule.category}
-          onChange={(e) => setRule({ ...rule, category: e.target.value })}
-        >
-          <option value="basic">Basic</option>
-          <option value="allowance">Allowance</option>
-          <option value="deduction">Deduction</option>
-          <option value="gross">Gross</option>
-          <option value="net">Net</option>
-        </select>
-      </FormField>
-      <FormField label="Sequence">
-        <input
-          type="number"
-          disabled={!canEdit}
-          className="w-full rounded border px-3 py-2"
-          value={rule.sequence}
-          onChange={(e) => setRule({ ...rule, sequence: e.target.value })}
-        />
-      </FormField>
-      <FormField label="Computation Type">
-        <select
-          disabled={!canEdit}
-          className="w-full rounded border px-3 py-2"
-          value={rule.computation_type}
-          onChange={(e) =>
-            setRule({ ...rule, computation_type: e.target.value })
-          }
-        >
-          <option value="fixed">Fixed Amount</option>
-          <option value="percentage">Percentage of another rule</option>
-          <option value="formula">Simple Formula</option>
-        </select>
-      </FormField>
-
-      {rule.computation_type === "fixed" && (
-        <FormField label="Fixed Amount">
+    <div>
+      <div className="view-head">
+        <Link href="/payroll/rules" className="section-title link">
+          ← Back to Salary Rules
+        </Link>
+      </div>
+      <div className="card pad" style={{ maxWidth: 480 }}>
+        <FormField label="Name">
           <input
-            type="number"
             disabled={!canEdit}
-            className="w-full rounded border px-3 py-2"
-            value={rule.fixed_amount ?? ""}
-            onChange={(e) => setRule({ ...rule, fixed_amount: e.target.value })}
+            value={rule.name}
+            onChange={(e) => setRule({ ...rule, name: e.target.value })}
           />
         </FormField>
-      )}
-      {rule.computation_type === "percentage" && (
-        <>
-          <FormField label="Percentage">
+        <FormField label="Code">
+          <input
+            disabled={!canEdit}
+            value={rule.code}
+            onChange={(e) => setRule({ ...rule, code: e.target.value })}
+          />
+        </FormField>
+        <div className="field-row">
+          <FormField label="Category">
+            <select
+              disabled={!canEdit}
+              value={rule.category}
+              onChange={(e) => setRule({ ...rule, category: e.target.value })}
+            >
+              <option value="basic">Basic</option>
+              <option value="allowance">Allowance</option>
+              <option value="deduction">Deduction</option>
+              <option value="gross">Gross</option>
+              <option value="net">Net</option>
+            </select>
+          </FormField>
+          <FormField label="Sequence">
             <input
               type="number"
               disabled={!canEdit}
-              className="w-full rounded border px-3 py-2"
-              value={rule.percentage ?? ""}
-              onChange={(e) => setRule({ ...rule, percentage: e.target.value })}
+              value={rule.sequence}
+              onChange={(e) => setRule({ ...rule, sequence: e.target.value })}
             />
           </FormField>
-          <FormField label="Percentage Of (rule code)">
+        </div>
+        <FormField label="Computation Type">
+          <select
+            disabled={!canEdit}
+            value={rule.computation_type}
+            onChange={(e) =>
+              setRule({ ...rule, computation_type: e.target.value })
+            }
+          >
+            <option value="fixed">Fixed Amount</option>
+            <option value="percentage">Percentage of another rule</option>
+            <option value="formula">Simple Formula</option>
+          </select>
+        </FormField>
+
+        {rule.computation_type === "fixed" && (
+          <FormField label="Fixed Amount">
+            <input
+              type="number"
+              disabled={!canEdit}
+              value={rule.fixed_amount ?? ""}
+              onChange={(e) => setRule({ ...rule, fixed_amount: e.target.value })}
+            />
+          </FormField>
+        )}
+        {rule.computation_type === "percentage" && (
+          <div className="field-row">
+            <FormField label="Percentage">
+              <input
+                type="number"
+                disabled={!canEdit}
+                value={rule.percentage ?? ""}
+                onChange={(e) => setRule({ ...rule, percentage: e.target.value })}
+              />
+            </FormField>
+            <FormField label="Percentage Of (rule code)">
+              <input
+                disabled={!canEdit}
+                value={rule.percentage_of_code ?? ""}
+                onChange={(e) =>
+                  setRule({ ...rule, percentage_of_code: e.target.value })
+                }
+              />
+            </FormField>
+          </div>
+        )}
+        {rule.computation_type === "formula" && (
+          <FormField label="Formula (e.g. basic * 0.12)">
             <input
               disabled={!canEdit}
-              className="w-full rounded border px-3 py-2"
-              value={rule.percentage_of_code ?? ""}
+              value={rule.formula_expression ?? ""}
               onChange={(e) =>
-                setRule({ ...rule, percentage_of_code: e.target.value })
+                setRule({ ...rule, formula_expression: e.target.value })
               }
             />
           </FormField>
-        </>
-      )}
-      {rule.computation_type === "formula" && (
-        <FormField label="Formula (e.g. basic * 0.12)">
-          <input
-            disabled={!canEdit}
-            className="w-full rounded border px-3 py-2"
-            value={rule.formula_expression ?? ""}
-            onChange={(e) =>
-              setRule({ ...rule, formula_expression: e.target.value })
-            }
-          />
-        </FormField>
-      )}
+        )}
 
-      {canEdit && <Button onClick={save}>Save</Button>}
+        {canEdit && <Button onClick={save}>Save</Button>}
+      </div>
     </div>
   );
 }

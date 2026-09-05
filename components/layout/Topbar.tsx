@@ -2,7 +2,21 @@
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
-export function Topbar({ name, role }: { name: string; role: string }) {
+const ROLE_LABEL: Record<string, string> = {
+  employee: "Employee",
+  hr_payroll: "HR & Payroll",
+  admin: "Admin",
+};
+
+export function Topbar({
+  name,
+  role,
+  onMenuClick,
+}: {
+  name: string;
+  role: string;
+  onMenuClick?: () => void;
+}) {
   const router = useRouter();
   const supabase = createClient();
 
@@ -11,15 +25,34 @@ export function Topbar({ name, role }: { name: string; role: string }) {
     router.push("/login");
   }
 
+  const today = new Date().toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
   return (
-    <header className="flex items-center justify-between bg-[#F5EFE0] px-6 py-3 border-b border-[#e8e0cf]">
-      <div />
-      <div className="flex items-center gap-4 text-sm text-[#3E2723]">
-        <span>
-          {name} <span className="text-[#8a7a63]">({role})</span>
-        </span>
-        <button onClick={logout} className="text-[#6B4226] underline">
-          Logout
+    <header className="topbar">
+      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <button className="nav-toggle" aria-label="Toggle menu" onClick={onMenuClick}>
+          <span />
+        </button>
+        <div className="topbar-greet">
+          <h1>Welcome back, {name}</h1>
+          <p>{today}</p>
+        </div>
+      </div>
+      <div className="role-stamp">
+        <span className="rs-label">VIEWING AS</span>
+        <span className="rs-value">{ROLE_LABEL[role] ?? role}</span>
+        <button
+          className="rs-chevron"
+          style={{ border: "none", cursor: "pointer" }}
+          title="Log out"
+          onClick={logout}
+        >
+          ⏻
         </button>
       </div>
     </header>

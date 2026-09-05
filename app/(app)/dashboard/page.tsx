@@ -6,6 +6,7 @@ import { FilterBar } from "@/components/dashboard/FilterBar";
 import { SalaryByDeptChart } from "@/components/dashboard/SalaryByDeptChart";
 import { PayslipStatusChart } from "@/components/dashboard/PayslipStatusChart";
 import { AlertsList } from "@/components/dashboard/AlertsList";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { formatCurrency } from "@/lib/utils/dates";
 
 export default function DashboardPage() {
@@ -53,7 +54,7 @@ export default function DashboardPage() {
   }, [filters]);
 
   if (!summary?.kpis) {
-    return <p className="text-sm text-[#8a7a63]">Loading...</p>;
+    return <LoadingBlock label="Loading dashboard…" />;
   }
 
   const statusData = [
@@ -65,51 +66,60 @@ export default function DashboardPage() {
 
   return (
     <div>
+      <div className="view-head">
+        <div>
+          <h2>Payroll overview</h2>
+          <p className="sub">Live figures aggregated across your HR and payroll data.</p>
+        </div>
+      </div>
+
       <FilterBar
         departments={departments}
         onChange={(f) => setFilters((prev) => ({ ...prev, ...f }))}
       />
-      <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-5">
-        <KpiCard
-          label="Total Net Paid"
-          value={formatCurrency(summary.kpis.totalNetPaid)}
-        />
-        <KpiCard
-          label="Payslips Generated"
-          value={summary.kpis.payslipsGenerated}
-        />
-        <KpiCard
-          label="Average Salary"
-          value={formatCurrency(summary.kpis.averageSalary)}
-        />
-        <KpiCard
-          label="Approved Time Off (days)"
-          value={summary.kpis.approvedTimeOffDays}
-        />
-        <KpiCard
-          label="Attendance Health %"
-          value={`${summary.kpis.attendanceHealth}%`}
-        />
+
+      <div className="kpi-row">
+        <KpiCard label="Total Net Paid" value={formatCurrency(summary.kpis.totalNetPaid)} />
+        <KpiCard label="Payslips Generated" value={summary.kpis.payslipsGenerated} />
+        <KpiCard label="Average Salary" value={formatCurrency(summary.kpis.averageSalary)} />
+        <KpiCard label="Approved Time Off (days)" value={summary.kpis.approvedTimeOffDays} />
+        <KpiCard label="Attendance Health %" value={`${summary.kpis.attendanceHealth}%`} />
       </div>
-      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+
+      <div className="grid-2" style={{ marginBottom: 18 }}>
         <SalaryByDeptChart data={summary.salaryByDept ?? []} />
         <PayslipStatusChart data={statusData} />
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+
+      <div className="grid-2">
         <AlertsList alerts={summary.alerts ?? []} />
-        <div className="rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4 text-sm text-[#3E2723]">
-          <p className="mb-2 font-medium">Attendance Overview</p>
-          <p>
-            Present: {summary.attendanceOverview?.present ?? 0} · Late:{" "}
-            {summary.attendanceOverview?.late ?? 0} · Absent:{" "}
-            {summary.attendanceOverview?.absent ?? 0} · Missing checkout:{" "}
-            {summary.attendanceOverview?.missing_checkout ?? 0}
-          </p>
-          <p className="mt-3 font-medium">Time Off Overview</p>
-          <p>
-            Approved days: {summary.timeOffOverview?.approvedDays ?? 0} ·
-            Pending requests: {summary.timeOffOverview?.pendingCount ?? 0}
-          </p>
+        <div className="card pad">
+          <div className="section-title">Attendance &amp; Time Off</div>
+          <div className="dl">
+            <dt>Present</dt>
+            <dd className="num">{summary.attendanceOverview?.present ?? 0}</dd>
+          </div>
+          <div className="dl">
+            <dt>Late</dt>
+            <dd className="num">{summary.attendanceOverview?.late ?? 0}</dd>
+          </div>
+          <div className="dl">
+            <dt>Absent</dt>
+            <dd className="num">{summary.attendanceOverview?.absent ?? 0}</dd>
+          </div>
+          <div className="dl">
+            <dt>Missing checkout</dt>
+            <dd className="num">{summary.attendanceOverview?.missing_checkout ?? 0}</dd>
+          </div>
+          <hr className="rule" />
+          <div className="dl">
+            <dt>Approved days</dt>
+            <dd className="num">{summary.timeOffOverview?.approvedDays ?? 0}</dd>
+          </div>
+          <div className="dl">
+            <dt>Pending requests</dt>
+            <dd className="num">{summary.timeOffOverview?.pendingCount ?? 0}</dd>
+          </div>
         </div>
       </div>
     </div>

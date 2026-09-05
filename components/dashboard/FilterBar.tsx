@@ -10,12 +10,18 @@ export function FilterBar({
   }) => void;
 }) {
   return (
-    <div className="mb-4 flex gap-3">
+    <div className="mb-4 flex flex-wrap gap-3">
       <select
-        className="rounded border px-3 py-2 text-sm"
         onChange={(e) =>
           onChange({ department_id: e.target.value || undefined })
         }
+        style={{
+          padding: "8px 12px",
+          border: "1px solid var(--rule-strong)",
+          borderRadius: "var(--radius-s)",
+          background: "var(--paper-raised)",
+          fontSize: 13,
+        }}
       >
         <option value="">All Departments</option>
         {departments.map((d) => (
@@ -25,10 +31,16 @@ export function FilterBar({
         ))}
       </select>
       <select
-        className="rounded border px-3 py-2 text-sm"
         onChange={(e) =>
           onChange({ employee_type: e.target.value || undefined })
         }
+        style={{
+          padding: "8px 12px",
+          border: "1px solid var(--rule-strong)",
+          borderRadius: "var(--radius-s)",
+          background: "var(--paper-raised)",
+          fontSize: 13,
+        }}
       >
         <option value="">All Employee Types</option>
         <option value="full_time">Full Time</option>

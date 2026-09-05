@@ -1,61 +1,60 @@
-import { ReactNode } from "react";
+import { ReactNode, CSSProperties } from "react";
 
 export interface Column<T> {
   header: string;
   render: (row: T) => ReactNode;
+  num?: boolean;
 }
 
 export function Table<T extends { id: string }>({
   columns,
   rows,
   onRowClick,
+  rowStyle,
 }: {
   columns: Column<T>[];
   rows: T[];
   onRowClick?: (row: T) => void;
+  rowStyle?: (row: T) => CSSProperties | undefined;
 }) {
   return (
-    <table className="w-full overflow-hidden rounded-lg border border-[#e8e0cf]">
-      <thead className="bg-[#3E2723] text-[#F5EFE0]">
-        <tr>
-          {columns.map((c) => (
-            <th
-              key={c.header}
-              className="px-4 py-2 text-left text-sm font-medium"
-            >
-              {c.header}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody className="bg-[#FAF6EC]">
-        {rows.map((row) => (
-          <tr
-            key={row.id}
-            onClick={() => onRowClick?.(row)}
-            className={onRowClick ? "cursor-pointer hover:bg-[#efe6d1]" : ""}
-          >
+    <div className="table-wrap">
+      <table className="ledger">
+        <thead>
+          <tr>
             {columns.map((c) => (
-              <td
-                key={c.header}
-                className="px-4 py-2 text-sm text-[#3E2723] border-t border-[#e8e0cf]"
-              >
-                {c.render(row)}
-              </td>
+              <th key={c.header} className={c.num ? "num" : ""}>
+                {c.header}
+              </th>
             ))}
           </tr>
-        ))}
-        {rows.length === 0 && (
-          <tr>
-            <td
-              colSpan={columns.length}
-              className="px-4 py-6 text-center text-sm text-[#8a7a63]"
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr
+              key={row.id}
+              onClick={() => onRowClick?.(row)}
+              style={{
+                ...(onRowClick ? { cursor: "pointer" } : {}),
+                ...(rowStyle?.(row) ?? {}),
+              }}
             >
-              No records
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+              {columns.map((c) => (
+                <td key={c.header} className={c.num ? "num" : ""}>
+                  {c.render(row)}
+                </td>
+              ))}
+            </tr>
+          ))}
+          {rows.length === 0 && (
+            <tr>
+              <td colSpan={columns.length} className="empty">
+                No records
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }

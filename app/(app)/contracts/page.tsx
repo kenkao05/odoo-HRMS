@@ -3,7 +3,9 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { Badge } from "@/components/ui/Badge";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
+import { formatCurrency } from "@/lib/utils/dates";
 
 function ContractsPageInner() {
   const [contracts, setContracts] = useState<any[]>([]);
@@ -21,27 +23,39 @@ function ContractsPageInner() {
   }, [employeeFilter]);
 
   return (
-    <Table
-      columns={[
-        { header: "Employee", render: (c) => c.employees?.name },
-        { header: "Start", render: (c) => c.start_date },
-        { header: "End", render: (c) => c.end_date ?? "Ongoing" },
-        { header: "Wage", render: (c) => c.wage },
-        {
-          header: "Structure",
-          render: (c) => c.salary_structures?.name ?? "--",
-        },
-        { header: "Status", render: (c) => <Badge status={c.status} /> },
-      ]}
-      rows={contracts}
-      onRowClick={(c) => router.push(`/contracts/${c.id}`)}
-    />
+    <div>
+      <div className="view-head">
+        <div>
+          <h2>Contract history</h2>
+          <p className="sub">
+            Historical employment terms. Only one contract is active per employee per period.
+          </p>
+        </div>
+      </div>
+      <div className="card">
+        <Table
+          columns={[
+            { header: "Employee", render: (c) => c.employees?.name },
+            { header: "Start", render: (c) => c.start_date },
+            { header: "End", render: (c) => c.end_date ?? "Ongoing" },
+            { header: "Wage", render: (c) => formatCurrency(c.wage), num: true },
+            { header: "Structure", render: (c) => c.salary_structures?.name ?? "--" },
+            { header: "Status", render: (c) => <Badge status={c.status} /> },
+          ]}
+          rows={contracts}
+          onRowClick={(c) => router.push(`/contracts/${c.id}`)}
+          rowStyle={(c) =>
+            c.status === "active" ? { background: "var(--green-wash)" } : undefined
+          }
+        />
+      </div>
+    </div>
   );
 }
 
 export default function ContractsPage() {
   return (
-    <Suspense fallback={<p className="text-sm text-[#8a7a63]">Loading...</p>}>
+    <Suspense fallback={<LoadingBlock label="Loading contracts…" />}>
       <ContractsPageInner />
     </Suspense>
   );

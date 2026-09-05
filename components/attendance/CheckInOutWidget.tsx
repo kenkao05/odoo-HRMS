@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/client";
 export function CheckInOutWidget({ employeeId }: { employeeId: string }) {
   const [checkedIn, setCheckedIn] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [now, setNow] = useState(new Date());
   const { push } = useToast();
   const supabase = createClient();
 
@@ -21,6 +22,11 @@ export function CheckInOutWidget({ employeeId }: { employeeId: string }) {
       setCheckedIn(!!data);
     })();
   }, [employeeId]);
+
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   async function toggle() {
     setLoading(true);
@@ -39,9 +45,16 @@ export function CheckInOutWidget({ employeeId }: { employeeId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-md bg-[#FAF6EC] px-3 py-2 border border-[#e8e0cf]">
-      <span className="text-sm text-[#3E2723]">
-        {new Date().toLocaleTimeString()}
+    <div className="card pad" style={{ display: "flex", alignItems: "center", gap: 14 }}>
+      <span className="num" style={{ fontFamily: "var(--font-display)", fontSize: 20, fontWeight: 600 }}>
+        {now.toLocaleTimeString()}
+      </span>
+      <span
+        className={`pill ${checkedIn ? "green" : "slate"}`}
+        style={{ marginRight: "auto" }}
+      >
+        <span className="pill-dot" />
+        {checkedIn ? "Checked in" : "Not checked in"}
       </span>
       <Button
         variant={checkedIn ? "danger" : "primary"}

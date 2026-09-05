@@ -1,51 +1,121 @@
 "use client";
+import type { JSX } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/lib/types/database.types";
 import { SIDEBAR_SECTIONS } from "@/lib/utils/roles";
+import {
+  DashboardIcon,
+  EmployeesIcon,
+  ContractsIcon,
+  ScheduleIcon,
+  AttendanceIcon,
+  TimeOffIcon,
+  SalaryIcon,
+  PayrunIcon,
+  PayslipIcon,
+  UsersAdminIcon,
+} from "./icons";
 
-const LINKS: Record<string, { label: string; href: string }[]> = {
-  dashboard: [{ label: "Dashboard", href: "/dashboard" }],
-  employees: [{ label: "Employees", href: "/employees" }],
-  contracts: [{ label: "Contracts", href: "/contracts" }],
-  "working-schedules": [
-    { label: "Working Schedules", href: "/working-schedules" },
-  ],
-  attendance: [{ label: "Attendance", href: "/attendance" }],
-  "time-off": [
-    { label: "Time Off Requests", href: "/time-off/requests" },
-    { label: "Allocations", href: "/time-off/allocations" },
-    { label: "Time Off Types", href: "/time-off/types" },
-  ],
-  payroll: [
-    { label: "Payruns", href: "/payroll/payruns" },
-    { label: "Payslips", href: "/payroll/payslips" },
-    { label: "Salary Structures", href: "/payroll/structures" },
-    { label: "Salary Rules", href: "/payroll/rules" },
-  ],
-  users: [{ label: "User Management", href: "/users" }],
+type NavLink = {
+  label: string;
+  href: string;
+  icon: (props: { className?: string }) => JSX.Element;
+  sub?: boolean;
 };
 
-export function Sidebar({ role }: { role: Role }) {
+const SECTION_LINKS: Record<string, NavLink[]> = {
+  dashboard: [{ label: "Dashboard", href: "/dashboard", icon: DashboardIcon }],
+  employees: [{ label: "Employees", href: "/employees", icon: EmployeesIcon }],
+  contracts: [{ label: "Contracts", href: "/contracts", icon: ContractsIcon }],
+  "working-schedules": [
+    { label: "Working Schedules", href: "/working-schedules", icon: ScheduleIcon },
+  ],
+  attendance: [{ label: "Attendance", href: "/attendance", icon: AttendanceIcon }],
+  "time-off": [
+    { label: "Time Off", href: "/time-off/requests", icon: TimeOffIcon },
+    { label: "Requests", href: "/time-off/requests", icon: TimeOffIcon, sub: true },
+    { label: "Allocations", href: "/time-off/allocations", icon: TimeOffIcon, sub: true },
+    { label: "Time Off Types", href: "/time-off/types", icon: TimeOffIcon, sub: true },
+  ],
+  payroll: [
+    { label: "Payroll", href: "/payroll/payruns", icon: SalaryIcon },
+    { label: "Payruns", href: "/payroll/payruns", icon: PayrunIcon, sub: true },
+    { label: "Payslips", href: "/payroll/payslips", icon: PayslipIcon, sub: true },
+    { label: "Salary Structures", href: "/payroll/structures", icon: SalaryIcon, sub: true },
+    { label: "Salary Rules", href: "/payroll/rules", icon: SalaryIcon, sub: true },
+  ],
+  users: [{ label: "User Management", href: "/users", icon: UsersAdminIcon }],
+};
+
+export function Sidebar({
+  role,
+  mobileOpen,
+  onNavigate,
+}: {
+  role: Role;
+  mobileOpen?: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
-  const sections = SIDEBAR_SECTIONS[role];
+  const sections = SIDEBAR_SECTIONS[role] as readonly string[];
 
   return (
-    <aside className="w-64 shrink-0 bg-[#3E2723] p-4 text-[#F5EFE0]">
-      <div className="mb-6 px-2 text-lg font-bold">PeoplePay360</div>
-      <nav className="space-y-1">
-        {sections
-          .flatMap((s) => LINKS[s])
-          .map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`block rounded-md px-3 py-2 text-sm ${pathname.startsWith(link.href) ? "bg-[#6B4226]" : "hover:bg-[#4d332c]"}`}
-            >
-              {link.label}
-            </Link>
-          ))}
-      </nav>
+    <aside className={`sidebar${mobileOpen ? " open" : ""}`}>
+      <div className="brand">
+        <div className="brand-mark">
+          People<em>Pay</em>360
+        </div>
+        <div className="brand-sub">HR &amp; Payroll Ledger</div>
+      </div>
+      <ul className="tabs">
+        {sections.map((section) => {
+          const links = SECTION_LINKS[section];
+          const isGroup = links.length > 1;
+          if (!isGroup) {
+            const link = links[0];
+            const active = pathname.startsWith(link.href);
+            const Icon = link.icon;
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  onClick={onNavigate}
+                  className={`tab-btn${active ? " active" : ""}`}
+                >
+                  <Icon />
+                  {link.label}
+                </Link>
+              </li>
+            );
+          }
+          const [header, ...subLinks] = links;
+          return (
+            <li key={section}>
+              <div className="tab-divider">{header.label}</div>
+              <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                {subLinks.map((link) => {
+                  const active = pathname.startsWith(link.href);
+                  const Icon = link.icon;
+                  return (
+                    <li key={link.href}>
+                      <Link
+                        href={link.href}
+                        onClick={onNavigate}
+                        className={`tab-btn sub${active ? " active" : ""}`}
+                      >
+                        <Icon />
+                        {link.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="sidebar-foot">PeoplePay360 · HR &amp; Payroll</div>
     </aside>
   );
 }

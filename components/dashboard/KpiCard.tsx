@@ -1,14 +1,17 @@
 export function KpiCard({
   label,
   value,
+  delta,
 }: {
   label: string;
   value: string | number;
+  delta?: { text: string; direction: "up" | "down" };
 }) {
   return (
-    <div className="rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <p className="text-xs text-[#8a7a63]">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-[#3E2723]">{value}</p>
+    <div className="kpi">
+      <div className="kpi-label">{label}</div>
+      <div className="kpi-value num">{value}</div>
+      {delta && <div className={`kpi-delta ${delta.direction}`}>{delta.text}</div>}
     </div>
   );
 }

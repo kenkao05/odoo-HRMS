@@ -5,9 +5,9 @@ export function WarningsCallout({
 }) {
   if (!warnings.length) return null;
   return (
-    <div className="mb-4 rounded-md border-2 border-[#C62828] bg-[#fdecea] p-4">
-      <p className="mb-2 font-medium text-[#C62828]">Validation warnings</p>
-      <ul className="list-disc pl-5 text-sm text-[#7a1e1e]">
+    <div className="warn-box" style={{ flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+      <span style={{ fontWeight: 600 }}>⚠ Validation warnings</span>
+      <ul style={{ margin: 0, paddingLeft: 18 }}>
         {warnings.map((w, i) => (
           <li key={i}>{w.message}</li>
         ))}

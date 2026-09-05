@@ -4,20 +4,16 @@ export function AlertsList({
   alerts: { message: string; record_id?: string }[];
 }) {
   return (
-    <div className="rounded-lg border border-[#e8e0cf] bg-[#FAF6EC] p-4">
-      <p className="mb-2 text-sm font-medium text-[#3E2723]">Current Alerts</p>
+    <div className="card pad">
+      <div className="section-title">Current Alerts</div>
       <div className="max-h-48 space-y-2 overflow-auto">
         {alerts.map((a, i) => (
-          <div
-            key={i}
-            className="rounded border-l-4 border-[#F9A825] bg-[#fff8e6] px-3 py-2 text-sm text-[#3E2723]"
-          >
-            {a.message}
+          <div key={i} className="warn-box" style={{ marginBottom: 0 }}>
+            <span>⚠</span>
+            <span>{a.message}</span>
           </div>
         ))}
-        {alerts.length === 0 && (
-          <p className="text-sm text-[#8a7a63]">No alerts</p>
-        )}
+        {alerts.length === 0 && <div className="empty">No alerts</div>}
       </div>
     </div>
   );

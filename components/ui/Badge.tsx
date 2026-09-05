@@ -1,12 +1,10 @@
-import { statusColor } from "@/lib/utils/colors";
+import { statusVariant } from "@/lib/utils/colors";
 
 export function Badge({ status, label }: { status: string; label?: string }) {
-  const color = statusColor(status);
+  const variant = statusVariant(status);
   return (
-    <span
-      className="inline-block rounded-full px-2.5 py-0.5 text-xs font-medium text-white"
-      style={{ backgroundColor: color }}
-    >
+    <span className={`pill ${variant}`}>
+      <span className="pill-dot" />
       {label ?? status}
     </span>
   );

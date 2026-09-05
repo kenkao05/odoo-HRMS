@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { FormField } from "@/components/ui/FormField";
+import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 import { createClient } from "@/lib/supabase/client";
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[] | null>(null);
   const [employees, setEmployees] = useState<{ id: string; name: string }[]>(
     [],
   );
@@ -71,58 +72,71 @@ export default function UsersPage() {
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
-        <Button onClick={() => setOpen(true)}>Add User</Button>
+      <div className="view-head">
+        <div>
+          <h2>User Management</h2>
+          <p className="sub">
+            Accounts, roles and permissions across the platform. Users are created here and linked to an employee record.
+          </p>
+        </div>
+        <div className="actions">
+          <Button onClick={() => setOpen(true)}>+ Add User</Button>
+        </div>
       </div>
-      <Table
-        columns={[
-          { header: "Name", render: (u) => u.employees?.name ?? "--" },
-          { header: "Email", render: (u) => u.employees?.email ?? "--" },
-          { header: "Role", render: (u) => u.role },
-          {
-            header: "Status",
-            render: (u) => <Badge status={u.active ? "active" : "inactive"} />,
-          },
-          {
-            header: "Actions",
-            render: (u) => (
-              <div className="flex gap-2">
-                <button
-                  className="text-xs text-[#6B4226] underline"
-                  onClick={() => resetPassword(u.id)}
-                >
-                  Reset password
-                </button>
-                <button
-                  className="text-xs text-[#C62828] underline"
-                  onClick={() => deactivate(u.id)}
-                >
-                  Deactivate
-                </button>
-              </div>
-            ),
-          },
-        ]}
-        rows={users}
-      />
+
+      {!users ? (
+        <LoadingBlock label="Loading users…" />
+      ) : (
+        <div className="card">
+          <Table
+            columns={[
+              { header: "Name", render: (u) => u.employees?.name ?? "--" },
+              { header: "Email", render: (u) => u.employees?.email ?? "--" },
+              { header: "Role", render: (u) => u.role },
+              {
+                header: "Status",
+                render: (u) => <Badge status={u.active ? "active" : "inactive"} />,
+              },
+              {
+                header: "Actions",
+                render: (u) => (
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => resetPassword(u.id)}
+                    >
+                      Reset password
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => deactivate(u.id)}
+                    >
+                      Deactivate
+                    </button>
+                  </div>
+                ),
+              },
+            ]}
+            rows={users}
+          />
+        </div>
+      )}
+
       <Modal open={open} onClose={() => setOpen(false)} title="Add User">
         <FormField label="Name">
           <input
-            className="w-full rounded border px-3 py-2"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
         </FormField>
         <FormField label="Email">
           <input
-            className="w-full rounded border px-3 py-2"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </FormField>
         <FormField label="Role">
           <select
-            className="w-full rounded border px-3 py-2"
             value={form.role}
             onChange={(e) => setForm({ ...form, role: e.target.value })}
           >
@@ -133,7 +147,6 @@ export default function UsersPage() {
         </FormField>
         <FormField label="Linked Employee">
           <select
-            className="w-full rounded border px-3 py-2"
             value={form.employee_id}
             onChange={(e) => setForm({ ...form, employee_id: e.target.value })}
           >
@@ -147,13 +160,16 @@ export default function UsersPage() {
         </FormField>
         {form.role === "hr_payroll" && (
           <FormField label="Can edit salary config">
-            <input
-              type="checkbox"
-              checked={form.can_edit_salary_config}
-              onChange={(e) =>
-                setForm({ ...form, can_edit_salary_config: e.target.checked })
-              }
-            />
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={form.can_edit_salary_config}
+                onChange={(e) =>
+                  setForm({ ...form, can_edit_salary_config: e.target.checked })
+                }
+              />
+              <span className="slider" />
+            </label>
           </FormField>
         )}
         <Button onClick={createUser}>Create</Button>
