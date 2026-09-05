@@ -52,7 +52,7 @@ export async function GET(
     </Document>
   );
 
-    const buffer = await renderToBuffer(doc);
+  const buffer = await renderToBuffer(doc);
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',
