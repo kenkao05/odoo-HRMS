@@ -101,6 +101,24 @@ export default function UsersPage() {
     }
   }
 
+  async function deleteUser(id: string, name: string) {
+    if (
+      !window.confirm(
+        `Permanently delete ${name}'s account? This can't be undone. Their employee record will stay, and you can create a new account for them later if needed.`,
+      )
+    ) {
+      return;
+    }
+    const res = await fetch(`/api/users/${id}/delete`, { method: "POST" });
+    const body = await res.json();
+    if (!res.ok) {
+      push(body.error ?? "Failed to delete user");
+      return;
+    }
+    push("User deleted", "success");
+    load();
+  }
+
   async function resetPassword(id: string) {
     const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
     const body = await res.json();
@@ -115,6 +133,15 @@ export default function UsersPage() {
     // Email wasn't configured or failed -- fall back to showing the link
     // directly so there's still a way to get it to the user.
     setResetLink({ email: body.email, link: body.reset_link });
+  }
+
+  async function copyToClipboard(text: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      push(`${label} copied`, "success");
+    } catch {
+      push("Couldn't copy -- select and copy manually");
+    }
   }
 
   return (
@@ -159,6 +186,12 @@ export default function UsersPage() {
                       onClick={() => deactivate(u.id)}
                     >
                       Deactivate
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      onClick={() => deleteUser(u.id, u.employees?.name ?? "this user")}
+                    >
+                      Delete
                     </button>
                   </div>
                 ),
@@ -212,6 +245,7 @@ export default function UsersPage() {
         open={!!createdCreds}
         onClose={() => setCreatedCreds(null)}
         title="User created"
+        closeOnOverlayClick={false}
       >
         <p className="sub" style={{ marginBottom: 12 }}>
           Share these credentials with the new user. This password will not be shown again --
@@ -221,7 +255,22 @@ export default function UsersPage() {
           <input readOnly value={createdCreds?.email ?? ""} />
         </FormField>
         <FormField label="Temporary password">
-          <input readOnly value={createdCreds?.password ?? ""} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              readOnly
+              value={createdCreds?.password ?? ""}
+              style={{ flex: 1, minWidth: 0 }}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() =>
+                copyToClipboard(createdCreds?.password ?? "", "Password")
+              }
+            >
+              Copy
+            </Button>
+          </div>
         </FormField>
         <Button onClick={() => setCreatedCreds(null)}>Done</Button>
       </Modal>
@@ -230,6 +279,7 @@ export default function UsersPage() {
         open={!!resetLink}
         onClose={() => setResetLink(null)}
         title="Password reset link"
+        closeOnOverlayClick={false}
       >
         <p className="sub" style={{ marginBottom: 12 }}>
           Send this link to {resetLink?.email}. It stays valid until they use
@@ -237,7 +287,20 @@ export default function UsersPage() {
           own, so take your time copying it.
         </p>
         <FormField label="Reset link">
-          <input readOnly value={resetLink?.link ?? ""} />
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              readOnly
+              value={resetLink?.link ?? ""}
+              style={{ flex: 1, minWidth: 0 }}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => copyToClipboard(resetLink?.link ?? "", "Link")}
+            >
+              Copy
+            </Button>
+          </div>
         </FormField>
         <Button onClick={() => setResetLink(null)}>Done</Button>
       </Modal>
