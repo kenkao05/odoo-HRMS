@@ -1,9 +1,15 @@
 "use client";
 export function FilterBar({
   departments,
+  filters,
   onChange,
 }: {
   departments: { id: string; name: string }[];
+  filters: {
+    period?: string;
+    department_id?: string;
+    employee_type?: string;
+  };
   onChange: (filters: {
     period?: string;
     department_id?: string;
@@ -21,6 +27,7 @@ export function FilterBar({
   return (
     <div className="mb-4 flex flex-wrap gap-3">
       <select
+        value={filters.period ?? ""}
         onChange={(e) => onChange({ period: e.target.value || undefined })}
         style={selectStyle}
       >
@@ -31,6 +38,7 @@ export function FilterBar({
         <option value="this_year">This Year</option>
       </select>
       <select
+        value={filters.department_id ?? ""}
         onChange={(e) =>
           onChange({ department_id: e.target.value || undefined })
         }
@@ -44,6 +52,7 @@ export function FilterBar({
         ))}
       </select>
       <select
+        value={filters.employee_type ?? ""}
         onChange={(e) =>
           onChange({ employee_type: e.target.value || undefined })
         }

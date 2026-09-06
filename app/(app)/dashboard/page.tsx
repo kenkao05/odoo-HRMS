@@ -41,20 +41,17 @@ function DashboardPageInner() {
       params.set("employee_type", filters.employee_type);
     }
 
-    setSummary(null);
     fetch(`/api/dashboard/summary?${params}`)
       .then(async (r) => {
         const data = await r.json();
         if (!r.ok || data.error || !data.kpis) {
           console.error("Dashboard summary failed", data);
-          setSummary(null);
           return;
         }
         setSummary(data);
       })
       .catch((err) => {
         console.error(err);
-        setSummary(null);
       });
   }, [filters]);
 
@@ -73,6 +70,7 @@ function DashboardPageInner() {
 
       <FilterBar
         departments={departments}
+        filters={filters}
         onChange={(f) => setFilters((prev) => ({ ...prev, ...f }))}
       />
 
