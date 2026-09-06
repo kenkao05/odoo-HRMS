@@ -22,6 +22,8 @@ type NavLink = {
   href: string;
   icon: (props: { className?: string }) => JSX.Element;
   sub?: boolean;
+  /** Restricts this specific link within an otherwise-visible section. Omit to show to everyone the section is shown to. */
+  hideFor?: Role[];
 };
 
 const SECTION_LINKS: Record<string, NavLink[]> = {
@@ -36,7 +38,13 @@ const SECTION_LINKS: Record<string, NavLink[]> = {
     { label: "Time Off", href: "/time-off/requests", icon: TimeOffIcon },
     { label: "Requests", href: "/time-off/requests", icon: TimeOffIcon, sub: true },
     { label: "Allocations", href: "/time-off/allocations", icon: TimeOffIcon, sub: true },
-    { label: "Time Off Types", href: "/time-off/types", icon: TimeOffIcon, sub: true },
+    {
+      label: "Time Off Types",
+      href: "/time-off/types",
+      icon: TimeOffIcon,
+      sub: true,
+      hideFor: ["employee"],
+    },
   ],
   payroll: [
     { label: "Payroll", href: "/payroll/payruns", icon: SalaryIcon },
@@ -70,7 +78,10 @@ export function Sidebar({
       </div>
       <ul className="tabs">
         {sections.map((section) => {
-          const links = SECTION_LINKS[section];
+          const links = SECTION_LINKS[section].filter(
+            (link) => !link.hideFor?.includes(role),
+          );
+          if (links.length === 0) return null;
           const isGroup = links.length > 1;
           if (!isGroup) {
             const link = links[0];

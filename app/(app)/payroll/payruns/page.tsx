@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/Button";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { PayrunWizard } from "@/components/payroll/PayrunWizard";
 import { createClient } from "@/lib/supabase/client";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canAccessPayroll } from "@/lib/utils/roles";
 
-export default function PayrunsPage() {
+function PayrunsPageInner() {
   const [payruns, setPayruns] = useState<any[] | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
   const router = useRouter();
@@ -75,5 +77,13 @@ export default function PayrunsPage() {
         }}
       />
     </div>
+  );
+}
+
+export default function PayrunsPage() {
+  return (
+    <RequireRole allow={canAccessPayroll}>
+      <PayrunsPageInner />
+    </RequireRole>
   );
 }

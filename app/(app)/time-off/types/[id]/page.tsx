@@ -8,8 +8,10 @@ import { FormField } from "@/components/ui/FormField";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { timeOffTypeSchema } from "@/lib/validation/time-off";
 import { useToast } from "@/components/ui/Toast";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canManageHR } from "@/lib/utils/roles";
 
-export default function TimeOffTypeDetailPage() {
+function TimeOffTypeDetailPageInner() {
   const { id } = useParams<{ id: string }>();
   const [type, setType] = useState<any>(null);
   const { push } = useToast();
@@ -93,5 +95,13 @@ export default function TimeOffTypeDetailPage() {
         <Button onClick={save}>Save</Button>
       </div>
     </div>
+  );
+}
+
+export default function TimeOffTypeDetailPage() {
+  return (
+    <RequireRole allow={canManageHR}>
+      <TimeOffTypeDetailPageInner />
+    </RequireRole>
   );
 }

@@ -6,8 +6,10 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
 import { ListFilters } from "@/components/ui/ListFilters";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canAccessPayroll } from "@/lib/utils/roles";
 
-export default function PayslipsPage() {
+function PayslipsPageInner() {
   const [payslips, setPayslips] = useState<any[] | null>(null);
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
@@ -76,5 +78,13 @@ export default function PayslipsPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function PayslipsPage() {
+  return (
+    <RequireRole allow={canAccessPayroll}>
+      <PayslipsPageInner />
+    </RequireRole>
   );
 }

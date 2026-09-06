@@ -8,8 +8,10 @@ import { FormField } from "@/components/ui/FormField";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { contractSchema } from "@/lib/validation/contract";
 import { useToast } from "@/components/ui/Toast";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canManageHR } from "@/lib/utils/roles";
 
-export default function ContractDetailPage() {
+function ContractDetailPageInner() {
   const { id } = useParams<{ id: string }>();
   const [contract, setContract] = useState<any>(null);
   const [structures, setStructures] = useState<{ id: string; name: string }[]>(
@@ -146,5 +148,13 @@ export default function ContractDetailPage() {
         <Button onClick={save}>Save</Button>
       </div>
     </div>
+  );
+}
+
+export default function ContractDetailPage() {
+  return (
+    <RequireRole allow={canManageHR}>
+      <ContractDetailPageInner />
+    </RequireRole>
   );
 }

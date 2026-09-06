@@ -9,8 +9,10 @@ import { Table } from "@/components/ui/Table";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { WarningsCallout } from "@/components/payroll/WarningsCallout";
 import { useToast } from "@/components/ui/Toast";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canAccessPayroll } from "@/lib/utils/roles";
 
-export default function PayrunDetailPage() {
+function PayrunDetailPageInner() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [payrun, setPayrun] = useState<any>(null);
@@ -121,5 +123,13 @@ export default function PayrunDetailPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function PayrunDetailPage() {
+  return (
+    <RequireRole allow={canAccessPayroll}>
+      <PayrunDetailPageInner />
+    </RequireRole>
   );
 }

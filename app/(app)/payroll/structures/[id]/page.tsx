@@ -9,8 +9,10 @@ import { Table } from "@/components/ui/Table";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 import { salaryStructureSchema } from "@/lib/validation/salary";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canAccessPayroll } from "@/lib/utils/roles";
 
-export default function SalaryStructureDetailPage() {
+function SalaryStructureDetailPageInner() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const [structure, setStructure] = useState<any>(null);
@@ -151,5 +153,13 @@ export default function SalaryStructureDetailPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function SalaryStructureDetailPage() {
+  return (
+    <RequireRole allow={canAccessPayroll}>
+      <SalaryStructureDetailPageInner />
+    </RequireRole>
   );
 }

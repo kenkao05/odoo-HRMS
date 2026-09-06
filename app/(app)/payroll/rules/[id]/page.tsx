@@ -8,8 +8,10 @@ import { FormField } from "@/components/ui/FormField";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 import { salaryRuleSchema } from "@/lib/validation/salary";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canAccessPayroll } from "@/lib/utils/roles";
 
-export default function SalaryRuleDetailPage() {
+function SalaryRuleDetailPageInner() {
   const { id } = useParams<{ id: string }>();
   const [rule, setRule] = useState<any>(null);
   const [canEdit, setCanEdit] = useState(false);
@@ -181,5 +183,13 @@ export default function SalaryRuleDetailPage() {
         {canEdit && <Button onClick={save}>Save</Button>}
       </div>
     </div>
+  );
+}
+
+export default function SalaryRuleDetailPage() {
+  return (
+    <RequireRole allow={canAccessPayroll}>
+      <SalaryRuleDetailPageInner />
+    </RequireRole>
   );
 }

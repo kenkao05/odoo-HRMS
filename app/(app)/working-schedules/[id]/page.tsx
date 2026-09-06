@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/Button";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canManageHR } from "@/lib/utils/roles";
 
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
 const DAY_LABELS: Record<(typeof DAYS)[number], string> = {
@@ -40,7 +42,7 @@ function hoursBetween(
   return Math.max(0, (eh * 60 + em - (sh * 60 + sm) - breakMin) / 60);
 }
 
-export default function WorkingScheduleDetailPage() {
+function WorkingScheduleDetailPageInner() {
   const { id } = useParams<{ id: string }>();
   const [schedule, setSchedule] = useState<any>(null);
   const [days, setDays] = useState<any[]>([]);
@@ -198,5 +200,13 @@ export default function WorkingScheduleDetailPage() {
         <Button onClick={save}>Save schedule</Button>
       </div>
     </div>
+  );
+}
+
+export default function WorkingScheduleDetailPage() {
+  return (
+    <RequireRole allow={canManageHR}>
+      <WorkingScheduleDetailPageInner />
+    </RequireRole>
   );
 }

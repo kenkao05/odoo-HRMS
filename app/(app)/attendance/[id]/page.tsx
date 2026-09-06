@@ -8,12 +8,16 @@ import { FormField } from "@/components/ui/FormField";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { attendanceCorrectionSchema } from "@/lib/validation/attendance";
 import { useToast } from "@/components/ui/Toast";
+import { useRole } from "@/lib/context/RoleContext";
+import { canManageHR } from "@/lib/utils/roles";
 
 export default function AttendanceDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [row, setRow] = useState<any>(null);
   const { push } = useToast();
   const supabase = createClient();
+  const role = useRole();
+  const canCorrect = canManageHR(role);
 
   useEffect(() => {
     supabase
@@ -58,6 +62,7 @@ export default function AttendanceDetailPage() {
         <FormField label="Check In">
           <input
             type="datetime-local"
+            disabled={!canCorrect}
             value={row.check_in?.slice(0, 16)}
             onChange={(e) =>
               setRow({ ...row, check_in: new Date(e.target.value).toISOString() })
@@ -67,6 +72,7 @@ export default function AttendanceDetailPage() {
         <FormField label="Check Out">
           <input
             type="datetime-local"
+            disabled={!canCorrect}
             value={row.check_out?.slice(0, 16) ?? ""}
             onChange={(e) =>
               setRow({
@@ -80,6 +86,7 @@ export default function AttendanceDetailPage() {
         </FormField>
         <FormField label="Status">
           <select
+            disabled={!canCorrect}
             value={row.status}
             onChange={(e) => setRow({ ...row, status: e.target.value })}
           >
@@ -89,7 +96,7 @@ export default function AttendanceDetailPage() {
             <option value="missing_checkout">Missing Checkout</option>
           </select>
         </FormField>
-        <Button onClick={save}>Save (manual correction)</Button>
+        {canCorrect && <Button onClick={save}>Save (manual correction)</Button>}
       </div>
     </div>
   );

@@ -9,8 +9,10 @@ import { NetSalaryTrendChart } from "@/components/dashboard/NetSalaryTrendChart"
 import { AlertsList } from "@/components/dashboard/AlertsList";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { formatCurrency } from "@/lib/utils/dates";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canAccessPayroll } from "@/lib/utils/roles";
 
-export default function DashboardPage() {
+function DashboardPageInner() {
   const [summary, setSummary] = useState<any>(null);
   const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
   const [filters, setFilters] = useState<{
@@ -123,5 +125,13 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <RequireRole allow={canAccessPayroll}>
+      <DashboardPageInner />
+    </RequireRole>
   );
 }

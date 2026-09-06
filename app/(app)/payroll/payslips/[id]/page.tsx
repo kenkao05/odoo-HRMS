@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { PayslipLinesTable } from "@/components/payroll/PayslipLinesTable";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canAccessPayroll } from "@/lib/utils/roles";
 
-export default function PayslipDetailPage() {
+function PayslipDetailPageInner() {
   const { id } = useParams<{ id: string }>();
   const [payslip, setPayslip] = useState<any>(null);
   const supabase = createClient();
@@ -75,5 +77,13 @@ export default function PayslipDetailPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function PayslipDetailPage() {
+  return (
+    <RequireRole allow={canAccessPayroll}>
+      <PayslipDetailPageInner />
+    </RequireRole>
   );
 }

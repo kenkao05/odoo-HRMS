@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canManageHR } from "@/lib/utils/roles";
 
-export default function TimeOffTypesPage() {
+function TimeOffTypesPageInner() {
   const [types, setTypes] = useState<any[] | null>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -48,5 +50,13 @@ export default function TimeOffTypesPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function TimeOffTypesPage() {
+  return (
+    <RequireRole allow={canManageHR}>
+      <TimeOffTypesPageInner />
+    </RequireRole>
   );
 }

@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canAccessPayroll } from "@/lib/utils/roles";
 
-export default function SalaryStructuresPage() {
+function SalaryStructuresPageInner() {
   const [structures, setStructures] = useState<any[] | null>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -50,5 +52,13 @@ export default function SalaryStructuresPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function SalaryStructuresPage() {
+  return (
+    <RequireRole allow={canAccessPayroll}>
+      <SalaryStructuresPageInner />
+    </RequireRole>
   );
 }

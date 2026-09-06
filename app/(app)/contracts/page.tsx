@@ -7,6 +7,8 @@ import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils/dates";
 import { ListFilters } from "@/components/ui/ListFilters";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canManageHR } from "@/lib/utils/roles";
 
 function ContractsPageInner() {
   const [contracts, setContracts] = useState<any[]>([]);
@@ -82,8 +84,10 @@ function ContractsPageInner() {
 
 export default function ContractsPage() {
   return (
-    <Suspense fallback={<LoadingBlock label="Loading contracts…" />}>
-      <ContractsPageInner />
-    </Suspense>
+    <RequireRole allow={canManageHR}>
+      <Suspense fallback={<LoadingBlock label="Loading contracts…" />}>
+        <ContractsPageInner />
+      </Suspense>
+    </RequireRole>
   );
 }

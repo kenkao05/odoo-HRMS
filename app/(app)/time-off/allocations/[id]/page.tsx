@@ -9,12 +9,16 @@ import { FormField } from "@/components/ui/FormField";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { allocationSchema } from "@/lib/validation/time-off";
 import { useToast } from "@/components/ui/Toast";
+import { useRole } from "@/lib/context/RoleContext";
+import { canManageHR } from "@/lib/utils/roles";
 
 export default function AllocationDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [alloc, setAlloc] = useState<any>(null);
   const { push } = useToast();
   const supabase = createClient();
+  const role = useRole();
+  const canEdit = canManageHR(role);
 
   useEffect(() => {
     supabase
@@ -82,6 +86,7 @@ export default function AllocationDetailPage() {
         <FormField label="Allocated">
           <input
             type="number"
+            disabled={!canEdit}
             value={alloc.allocated}
             onChange={(e) => setAlloc({ ...alloc, allocated: e.target.value })}
           />
@@ -89,6 +94,7 @@ export default function AllocationDetailPage() {
         <FormField label="Valid From">
           <input
             type="date"
+            disabled={!canEdit}
             value={alloc.valid_from}
             onChange={(e) => setAlloc({ ...alloc, valid_from: e.target.value })}
           />
@@ -96,20 +102,23 @@ export default function AllocationDetailPage() {
         <FormField label="Valid To">
           <input
             type="date"
+            disabled={!canEdit}
             value={alloc.valid_to ?? ""}
             onChange={(e) =>
               setAlloc({ ...alloc, valid_to: e.target.value || null })
             }
           />
         </FormField>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Button onClick={save}>Save</Button>
-          {alloc.status === "pending" && (
-            <Button variant="secondary" onClick={approve}>
-              Approve
-            </Button>
-          )}
-        </div>
+        {canEdit && (
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button onClick={save}>Save</Button>
+            {alloc.status === "pending" && (
+              <Button variant="secondary" onClick={approve}>
+                Approve
+              </Button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { Table } from "@/components/ui/Table";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { canManageHR } from "@/lib/utils/roles";
 
-export default function WorkingSchedulesPage() {
+function WorkingSchedulesPageInner() {
   const [schedules, setSchedules] = useState<any[] | null>(null);
   const router = useRouter();
   const supabase = createClient();
@@ -45,5 +47,13 @@ export default function WorkingSchedulesPage() {
         />
       </div>
     </div>
+  );
+}
+
+export default function WorkingSchedulesPage() {
+  return (
+    <RequireRole allow={canManageHR}>
+      <WorkingSchedulesPageInner />
+    </RequireRole>
   );
 }

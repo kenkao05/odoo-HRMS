@@ -8,6 +8,8 @@ import { FormField } from "@/components/ui/FormField";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
 import { createClient } from "@/lib/supabase/client";
+import { RequireRole } from "@/components/auth/RequireRole";
+import { isAdmin } from "@/lib/utils/roles";
 
 const ROLE_OPTIONS = [
   { value: "employee", label: "Employee" },
@@ -17,7 +19,7 @@ const ROLE_OPTIONS = [
   { value: "admin", label: "Admin" },
 ];
 
-export default function UsersPage() {
+function UsersPageInner() {
   const [users, setUsers] = useState<any[] | null>(null);
   const [employees, setEmployees] = useState<{ id: string; name: string }[]>(
     [],
@@ -305,5 +307,13 @@ export default function UsersPage() {
         <Button onClick={() => setResetLink(null)}>Done</Button>
       </Modal>
     </div>
+  );
+}
+
+export default function UsersPage() {
+  return (
+    <RequireRole allow={isAdmin}>
+      <UsersPageInner />
+    </RequireRole>
   );
 }

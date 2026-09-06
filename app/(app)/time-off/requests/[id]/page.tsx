@@ -7,38 +7,24 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
+import { useRole } from "@/lib/context/RoleContext";
+import { canManageHR } from "@/lib/utils/roles";
 
 export default function TimeOffRequestDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [request, setRequest] = useState<any>(null);
-  const [canDecide, setCanDecide] = useState(false);
   const { push } = useToast();
   const supabase = createClient();
+  const role = useRole();
+  const canDecide = canManageHR(role);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("time_off_requests")
-        .select("*, employees(name), time_off_types(name)")
-        .eq("id", id)
-        .single();
-      setRequest(data);
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-        setCanDecide(
-          ["hr_manager", "hr_payroll_user", "hr_payroll_manager", "admin"].includes(
-            profile?.role ?? "",
-          ),
-        );
-      }
-    })();
+    supabase
+      .from("time_off_requests")
+      .select("*, employees(name), time_off_types(name)")
+      .eq("id", id)
+      .single()
+      .then(({ data }) => setRequest(data));
   }, [id]);
 
   async function decide(decision: "approved" | "refused") {
