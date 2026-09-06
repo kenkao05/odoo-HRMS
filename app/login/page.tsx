@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
   const supabase = createClient();
   const { push } = useToast();
@@ -18,30 +19,35 @@ export default function LoginPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
-    const { data, error: signInError } = await supabase.auth.signInWithPassword(
-      { email, password },
-    );
-    if (signInError || !data.user) {
-      const message = signInError?.message?.toLowerCase().includes("invalid login")
-        ? "Incorrect email or password. Please try again."
-        : (signInError?.message ?? "Sign-in failed");
-      setError(message);
-      push(message, "error");
-      return;
+    setLoading(true);
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword(
+        { email, password },
+      );
+      if (signInError || !data.user) {
+        const message = signInError?.message?.toLowerCase().includes("invalid login")
+          ? "Incorrect email or password. Please try again."
+          : (signInError?.message ?? "Sign-in failed");
+        setError(message);
+        push(message, "error");
+        return;
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role, active")
+        .eq("id", data.user.id)
+        .single();
+      if (!profile?.active) {
+        const message = "This account has been deactivated";
+        setError(message);
+        push(message, "error");
+        await supabase.auth.signOut();
+        return;
+      }
+      router.push(landingPageFor(profile.role));
+    } finally {
+      setLoading(false);
     }
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role, active")
-      .eq("id", data.user.id)
-      .single();
-    if (!profile?.active) {
-      const message = "This account has been deactivated";
-      setError(message);
-      push(message, "error");
-      await supabase.auth.signOut();
-      return;
-    }
-    router.push(landingPageFor(profile.role));
   }
 
   return (
@@ -79,8 +85,8 @@ export default function LoginPage() {
             {error}
           </p>
         )}
-        <Button type="submit" className="w-full justify-center">
-          Sign In
+        <Button type="submit" className="w-full justify-center" disabled={loading}>
+          {loading ? "Signing in…" : "Sign In"}
         </Button>
         <p
           className="mt-4 text-center text-xs"

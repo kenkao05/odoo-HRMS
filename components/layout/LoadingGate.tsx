@@ -19,8 +19,8 @@ export function LoadingGate({ children }: { children: React.ReactNode }) {
     // so the PeoplePay360 wordmark performs its entrance automatically.
     const scrollTween = gsap.to(scroller, {
       scrollTop: 150,
-      duration: 1.15,
-      delay: 0.15,
+      duration: 0.6,
+      delay: 0.05,
       ease: "power2.inOut",
     });
 
@@ -30,12 +30,12 @@ export function LoadingGate({ children }: { children: React.ReactNode }) {
         gsap.to(overlayRef.current, {
           opacity: 0,
           scale: 1.015,
-          duration: 0.65,
+          duration: 0.35,
           ease: "power3.inOut",
           onComplete: () => setVisible(false),
         });
       }
-    }, 2350);
+    }, 900);
 
     return () => {
       scrollTween.kill();
