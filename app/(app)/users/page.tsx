@@ -167,7 +167,10 @@ function UsersPageInner() {
           <Table
             columns={[
               { header: "Name", render: (u) => u.employees?.name ?? "--" },
-              { header: "Email", render: (u) => u.employees?.email ?? "--" },
+              {
+                header: "Login email",
+                render: (u) => u.auth_email ?? u.employees?.email ?? "--",
+              },
               { header: "Roles", render: (u) => (u.roles ?? [u.role]).join(", ") },
               {
                 header: "Status",

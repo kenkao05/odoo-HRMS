@@ -35,7 +35,20 @@ export async function GET() {
 
   if (error)
     return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ users: data });
+
+  // `employees.email` is the HR record's email and can differ from the
+  // email the account was actually created/logs in with -- fetch each
+  // profile's real auth email (via its id, which IS the auth user id) so
+  // the UI can show/reset against the correct address instead of silently
+  // relying on the employee record matching.
+  const usersWithAuthEmail = await Promise.all(
+    (data ?? []).map(async (u) => {
+      const { data: authUser } = await admin.auth.admin.getUserById(u.id);
+      return { ...u, auth_email: authUser?.user?.email ?? null };
+    }),
+  );
+
+  return NextResponse.json({ users: usersWithAuthEmail });
 }
 
 export async function POST(req: Request) {

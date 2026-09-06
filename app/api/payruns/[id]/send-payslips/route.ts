@@ -67,7 +67,7 @@ export async function POST(
     }
     try {
       await resend.emails.send({
-        from: "payroll@peoplepay360.app",
+        from: "onboarding@resend.dev",
         to: p.employees.email,
         subject: "Your payslip is ready",
         html: `<p>Hi ${p.employees.name},</p><p>Your net pay for this period is ${p.net}. View your full payslip in the portal.</p>`,

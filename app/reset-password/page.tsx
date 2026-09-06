@@ -21,26 +21,42 @@ export default function ResetPasswordPage() {
   const { push } = useToast();
 
   useEffect(() => {
-    let sessionFound = false;
+    let settled = false;
+    const markReady = () => {
+      if (!settled) {
+        settled = true;
+        setReady(true);
+      }
+    };
+
+    // The recovery tokens only ever exist in this page's URL hash (they're
+    // never sent to the server). Parse and apply them explicitly instead
+    // of trusting whatever session already happens to be active in this
+    // browser -- previously, an admin who was already logged into their
+    // own account in the same browser would have that account's session
+    // picked up by getSession() and wrongly treated as a valid recovery
+    // session, causing the admin's own password to be changed instead of
+    // the target user's.
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const accessToken = hashParams.get("access_token");
+    const refreshToken = hashParams.get("refresh_token");
+    const type = hashParams.get("type");
+
+    if (type === "recovery" && accessToken && refreshToken) {
+      supabase.auth
+        .setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ error }) => {
+          if (error) setInvalid(true);
+          else markReady();
+        });
+    }
 
     const { data: listener } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        sessionFound = true;
-        setReady(true);
-      }
-    });
-
-    // If the event already fired before this listener attached, a session
-    // will already be present -- treat that as valid too.
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) {
-        sessionFound = true;
-        setReady(true);
-      }
+      if (event === "PASSWORD_RECOVERY") markReady();
     });
 
     const timeout = setTimeout(() => {
-      if (!sessionFound) setInvalid(true);
+      if (!settled) setInvalid(true);
     }, 4000);
 
     return () => {

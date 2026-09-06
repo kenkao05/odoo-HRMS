@@ -134,7 +134,7 @@ export async function DELETE(
   const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     await resend.emails.send({
-      from: "payroll@peoplepay360.app",
+      from: "onboarding@resend.dev",
       to: targetUser.user.email,
       subject: "Reset your PeoplePay360 password",
       html: `<p>A password reset was requested for your PeoplePay360 account.</p><p><a href="${resetLink}">Click here to set a new password</a>. If you didn't request this, you can ignore this email.</p>`,
