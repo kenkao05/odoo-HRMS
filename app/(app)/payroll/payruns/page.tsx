@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { PayrunWizard } from "@/components/payroll/PayrunWizard";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { createClient } from "@/lib/supabase/client";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { canAccessPayroll } from "@/lib/utils/roles";
@@ -13,6 +14,7 @@ import { canAccessPayroll } from "@/lib/utils/roles";
 function PayrunsPageInner() {
   const [payruns, setPayruns] = useState<any[] | null>(null);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [search, setSearch] = useState("");
   const router = useRouter();
   const supabase = createClient();
 
@@ -46,6 +48,9 @@ function PayrunsPageInner() {
         <LoadingBlock label="Loading payruns…" />
       ) : (
         <div className="card">
+          <div className="mb-4">
+            <SearchBar value={search} onChange={setSearch} placeholder="Search payruns…" />
+          </div>
           <Table
             columns={[
               {
@@ -63,7 +68,16 @@ function PayrunsPageInner() {
                 num: true,
               },
             ]}
-            rows={payruns}
+            rows={payruns.filter((p) => {
+              const q = search.trim().toLowerCase();
+              if (!q) return true;
+              return (
+                p.period_start?.toLowerCase().includes(q) ||
+                p.period_end?.toLowerCase().includes(q) ||
+                p.salary_structures?.name?.toLowerCase().includes(q) ||
+                p.status?.toLowerCase().includes(q)
+              );
+            })}
             onRowClick={(p) => router.push(`/payroll/payruns/${p.id}`)}
           />
         </div>

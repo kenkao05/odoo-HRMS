@@ -7,6 +7,7 @@ import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
 import { formatCurrency } from "@/lib/utils/dates";
 import { ListFilters } from "@/components/ui/ListFilters";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { canManageHR } from "@/lib/utils/roles";
 
@@ -16,6 +17,7 @@ function ContractsPageInner() {
   const [status, setStatus] = useState("");
   const [department, setDepartment] = useState("");
   const [departments, setDepartments] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
   const router = useRouter();
   const searchParams = useSearchParams();
   const employeeFilter = searchParams.get("employee");
@@ -40,20 +42,23 @@ function ContractsPageInner() {
           </p>
         </div>
       </div>
-      <ListFilters
-        departments={departments}
-        type={type}
-        status={status}
-        department={department}
-        onType={setType}
-        onStatus={setStatus}
-        onDepartment={setDepartment}
-        statusOptions={[
-          { value: "active", label: "Active" },
-          { value: "expired", label: "Expired" },
-          { value: "draft", label: "Draft" },
-        ]}
-      />
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search contracts…" />
+        <ListFilters
+          departments={departments}
+          type={type}
+          status={status}
+          department={department}
+          onType={setType}
+          onStatus={setStatus}
+          onDepartment={setDepartment}
+          statusOptions={[
+            { value: "active", label: "Active" },
+            { value: "expired", label: "Expired" },
+            { value: "draft", label: "Draft" },
+          ]}
+        />
+      </div>
       <div className="card">
         <Table
           columns={[
@@ -66,10 +71,14 @@ function ContractsPageInner() {
           ]}
           rows={contracts.filter((x: any) => {
             const e = x.employees;
+            const q = search.trim().toLowerCase();
             return (
               (!type || e?.employee_type === type) &&
               (!status || x.status === status) &&
-              (!department || e?.department_id === department)
+              (!department || e?.department_id === department) &&
+              (!q ||
+                e?.name?.toLowerCase().includes(q) ||
+                x.salary_structures?.name?.toLowerCase().includes(q))
             );
           })}
           onRowClick={(c) => router.push(`/contracts/${c.id}`)}

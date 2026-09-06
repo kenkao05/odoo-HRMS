@@ -7,6 +7,7 @@ import { Modal } from "@/components/ui/Modal";
 import { FormField } from "@/components/ui/FormField";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { useToast } from "@/components/ui/Toast";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { createClient } from "@/lib/supabase/client";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { isAdmin } from "@/lib/utils/roles";
@@ -21,6 +22,7 @@ const ROLE_OPTIONS = [
 
 function UsersPageInner() {
   const [users, setUsers] = useState<any[] | null>(null);
+  const [search, setSearch] = useState("");
   const [employees, setEmployees] = useState<{ id: string; name: string }[]>(
     [],
   );
@@ -160,6 +162,14 @@ function UsersPageInner() {
         </div>
       </div>
 
+      <div className="mb-4">
+        <SearchBar
+          value={search}
+          onChange={setSearch}
+          placeholder="Search users, employees or email…"
+        />
+      </div>
+
       {!users ? (
         <LoadingBlock label="Loading users…" />
       ) : (
@@ -202,7 +212,16 @@ function UsersPageInner() {
                 ),
               },
             ]}
-            rows={users}
+            rows={users.filter((u) => {
+              const q = search.trim().toLowerCase();
+              if (!q) return true;
+              return (
+                u.employees?.name?.toLowerCase().includes(q) ||
+                u.auth_email?.toLowerCase().includes(q) ||
+                u.employees?.email?.toLowerCase().includes(q) ||
+                (u.roles ?? [u.role]).join(", ").toLowerCase().includes(q)
+              );
+            })}
           />
         </div>
       )}

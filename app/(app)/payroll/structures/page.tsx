@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Table } from "@/components/ui/Table";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
 import { RequireRole } from "@/components/auth/RequireRole";
@@ -9,6 +10,7 @@ import { canAccessPayroll } from "@/lib/utils/roles";
 
 function SalaryStructuresPageInner() {
   const [structures, setStructures] = useState<any[] | null>(null);
+  const [search, setSearch] = useState("");
   const router = useRouter();
   const supabase = createClient();
 
@@ -31,6 +33,9 @@ function SalaryStructuresPageInner() {
           </p>
         </div>
       </div>
+      <div className="mb-4">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search structures…" />
+      </div>
       <div className="card">
         <Table
           columns={[
@@ -47,7 +52,11 @@ function SalaryStructuresPageInner() {
             },
             { header: "Active", render: (s) => (s.active ? "Yes" : "No") },
           ]}
-          rows={structures}
+          rows={structures.filter((s) => {
+            const q = search.trim().toLowerCase();
+            if (!q) return true;
+            return s.name?.toLowerCase().includes(q);
+          })}
           onRowClick={(s) => router.push(`/payroll/structures/${s.id}`)}
         />
       </div>

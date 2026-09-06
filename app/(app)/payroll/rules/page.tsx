@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Table } from "@/components/ui/Table";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
 import { RequireRole } from "@/components/auth/RequireRole";
@@ -9,6 +10,7 @@ import { canAccessPayroll } from "@/lib/utils/roles";
 
 function SalaryRulesPageInner() {
   const [rules, setRules] = useState<any[] | null>(null);
+  const [search, setSearch] = useState("");
   const router = useRouter();
   const supabase = createClient();
 
@@ -32,6 +34,9 @@ function SalaryRulesPageInner() {
           </p>
         </div>
       </div>
+      <div className="mb-4">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search salary rules…" />
+      </div>
       <div className="card">
         <Table
           columns={[
@@ -44,7 +49,16 @@ function SalaryRulesPageInner() {
               render: (r) => r.salary_structures?.name ?? "--",
             },
           ]}
-          rows={rules}
+          rows={rules.filter((r) => {
+            const q = search.trim().toLowerCase();
+            if (!q) return true;
+            return (
+              r.name?.toLowerCase().includes(q) ||
+              r.code?.toLowerCase().includes(q) ||
+              r.category?.toLowerCase().includes(q) ||
+              r.salary_structures?.name?.toLowerCase().includes(q)
+            );
+          })}
           onRowClick={(r) => router.push(`/payroll/rules/${r.id}`)}
         />
       </div>

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { createClient } from "@/lib/supabase/client";
 import { ListFilters } from "@/components/ui/ListFilters";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { RequireRole } from "@/components/auth/RequireRole";
 import { canAccessPayroll } from "@/lib/utils/roles";
 
@@ -15,6 +16,7 @@ function PayslipsPageInner() {
   const [status, setStatus] = useState("");
   const [department, setDepartment] = useState("");
   const [departments, setDepartments] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
   const router = useRouter();
   const supabase = createClient();
 
@@ -36,21 +38,24 @@ function PayslipsPageInner() {
           <p className="sub">Generated breakdown of basic, allowances and deductions per payroll period.</p>
         </div>
       </div>
-      <ListFilters
-        departments={departments}
-        type={type}
-        status={status}
-        department={department}
-        onType={setType}
-        onStatus={setStatus}
-        onDepartment={setDepartment}
-        statusOptions={[
-          { value: "draft", label: "Draft" },
-          { value: "computed", label: "Computed" },
-          { value: "validated", label: "Validated" },
-          { value: "paid", label: "Paid" },
-        ]}
-      />
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search payslips…" />
+        <ListFilters
+          departments={departments}
+          type={type}
+          status={status}
+          department={department}
+          onType={setType}
+          onStatus={setStatus}
+          onDepartment={setDepartment}
+          statusOptions={[
+            { value: "draft", label: "Draft" },
+            { value: "computed", label: "Computed" },
+            { value: "validated", label: "Validated" },
+            { value: "paid", label: "Paid" },
+          ]}
+        />
+      </div>
       <div className="card">
         <Table
           columns={[
@@ -68,10 +73,12 @@ function PayslipsPageInner() {
           ]}
           rows={payslips.filter((x: any) => {
             const e = x.employees;
+            const q = search.trim().toLowerCase();
             return (
               (!type || e?.employee_type === type) &&
               (!status || x.status === status) &&
-              (!department || e?.department_id === department)
+              (!department || e?.department_id === department) &&
+              (!q || e?.name?.toLowerCase().includes(q))
             );
           })}
           onRowClick={(p) => router.push(`/payroll/payslips/${p.id}`)}

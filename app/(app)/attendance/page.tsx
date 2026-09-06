@@ -7,6 +7,7 @@ import { LoadingBlock } from "@/components/ui/LoadingBlock";
 import { CheckInOutWidget } from "@/components/attendance/CheckInOutWidget";
 import { createClient } from "@/lib/supabase/client";
 import { ListFilters } from "@/components/ui/ListFilters";
+import { SearchBar } from "@/components/ui/SearchBar";
 
 function AttendancePageInner() {
   const [rows, setRows] = useState<any[] | null>(null);
@@ -14,6 +15,7 @@ function AttendancePageInner() {
   const [status, setStatus] = useState("");
   const [department, setDepartment] = useState("");
   const [departments, setDepartments] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
   const [myEmployeeId, setMyEmployeeId] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -63,21 +65,24 @@ function AttendancePageInner() {
         </div>
       )}
 
-      <ListFilters
-        departments={departments}
-        type={type}
-        status={status}
-        department={department}
-        onType={setType}
-        onStatus={setStatus}
-        onDepartment={setDepartment}
-        statusOptions={[
-          { value: "present", label: "Present" },
-          { value: "late", label: "Late" },
-          { value: "missing_checkout", label: "Missing Checkout" },
-          { value: "absent", label: "Absent" },
-        ]}
-      />
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <SearchBar value={search} onChange={setSearch} placeholder="Search attendance…" />
+        <ListFilters
+          departments={departments}
+          type={type}
+          status={status}
+          department={department}
+          onType={setType}
+          onStatus={setStatus}
+          onDepartment={setDepartment}
+          statusOptions={[
+            { value: "present", label: "Present" },
+            { value: "late", label: "Late" },
+            { value: "missing_checkout", label: "Missing Checkout" },
+            { value: "absent", label: "Absent" },
+          ]}
+        />
+      </div>
       <div className="card">
         <Table
           columns={[
@@ -112,10 +117,12 @@ function AttendancePageInner() {
           ]}
           rows={rows.filter((x: any) => {
             const e = x.employees;
+            const q = search.trim().toLowerCase();
             return (
               (!type || e?.employee_type === type) &&
               (!status || x.status === status) &&
-              (!department || e?.department_id === department)
+              (!department || e?.department_id === department) &&
+              (!q || e?.name?.toLowerCase().includes(q))
             );
           })}
           onRowClick={(a) => router.push(`/attendance/${a.id}`)}

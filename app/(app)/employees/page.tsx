@@ -9,6 +9,7 @@ import { FormField } from "@/components/ui/FormField";
 import { useToast } from "@/components/ui/Toast";
 import { createClient } from "@/lib/supabase/client";
 import { ListFilters } from "@/components/ui/ListFilters";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { employeeSchema, EmployeeInput } from "@/lib/validation/employee";
 
 const EMPTY_FORM: EmployeeInput = {
@@ -40,6 +41,7 @@ export default function EmployeesPage() {
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
   const [department, setDepartment] = useState("");
+  const [search, setSearch] = useState("");
   const [view, setView] = useState<"list" | "kanban">("list");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<EmployeeInput>(EMPTY_FORM);
@@ -85,11 +87,23 @@ export default function EmployeesPage() {
     loadEmployees();
   }
 
+  const matchesSearch = (e: any) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      e.name?.toLowerCase().includes(q) ||
+      e.email?.toLowerCase().includes(q) ||
+      e.job_position?.toLowerCase().includes(q) ||
+      e.departments?.name?.toLowerCase().includes(q)
+    );
+  };
+
   const filteredEmployees = employees.filter(
     (e) =>
       (!type || e.employee_type === type) &&
       (!status || e.status === status) &&
-      (!department || e.department_id === department),
+      (!department || e.department_id === department) &&
+      matchesSearch(e),
   );
 
   return (
@@ -106,15 +120,18 @@ export default function EmployeesPage() {
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <ListFilters
-          departments={departments}
-          type={type}
-          status={status}
-          department={department}
-          onType={setType}
-          onStatus={setStatus}
-          onDepartment={setDepartment}
-        />
+        <div className="flex flex-wrap items-center gap-3">
+          <SearchBar value={search} onChange={setSearch} placeholder="Search employees..." />
+          <ListFilters
+            departments={departments}
+            type={type}
+            status={status}
+            department={department}
+            onType={setType}
+            onStatus={setStatus}
+            onDepartment={setDepartment}
+          />
+        </div>
         <div className="view-toggle" role="group" aria-label="Employee view">
           <button className={view === "list" ? "active" : ""} onClick={() => setView("list")}>
             ☷ List
@@ -171,7 +188,8 @@ export default function EmployeesPage() {
               (e) =>
                 e.employee_type === key &&
                 (!status || e.status === status) &&
-                (!department || e.department_id === department),
+                (!department || e.department_id === department) &&
+                matchesSearch(e),
             );
             return (
               <div className="kanban-column" key={key}>
